@@ -1,0 +1,24 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Oh My Claude Code state
+.omc/
+
+# Node (if plugins use npm dependencies)
+node_modules/
+
+# Python (if plugins use pip dependencies)
+__pycache__/
+*.pyc
+.venv/

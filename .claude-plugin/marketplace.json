@@ -1,0 +1,11 @@
+{
+  "name": "plem-marketplace",
+  "owner": {
+    "name": "WIM Corporation"
+  },
+  "metadata": {
+    "description": "plem Claude Code plugin marketplace",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": []
+}
