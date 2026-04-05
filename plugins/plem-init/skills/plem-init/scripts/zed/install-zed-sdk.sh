@@ -107,6 +107,15 @@ if [ "$PYTHON_VER" = "none" ]; then
 fi
 info "  Python: ${PYTHON_VER}"
 
+# RT 커널 감지
+if uname -v | grep -q "PREEMPT_RT"; then
+    warn "PREEMPT_RT 커널 감지"
+    warn "ZED X (GMSL2) 카메라 사용 시 커널 모듈 호환성 확인 필요:"
+    warn "  ls /usr/lib/modules/$(uname -r)/kernel/drivers/stereolabs/"
+    warn "  GMSL2 모듈(sl_zedx.ko, max96712.ko)이 RT 커널에서 로드되지 않을 수 있음"
+    warn "  USB 카메라(ZED 2, ZED Mini)는 RT 커널에서도 정상 동작"
+fi
+
 # 이미 설치 확인
 if [ -f /usr/local/zed/lib/libsl_zed.so ] && [ "$FORCE_REINSTALL" = false ]; then
     warn "ZED SDK가 이미 설치되어 있음 (/usr/local/zed/)"

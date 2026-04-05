@@ -20,9 +20,10 @@ argument-hint: "[topic]"
 | YOLO config 작성법 | `references/yolo-config.md` | yolo config, class, detection_model |
 | DDS/네트워크 튜닝 | `references/dds-network.md` | dds, cyclone, 커널 버퍼, 토픽 안옴 |
 | 성능 최적화 | `references/optimization.md` | 느림, cpu, latency, frequency, ROI |
-| TF/URDF/마운트/멀티카메라 | `references/robot-integration.md` | tf, urdf, mount, 마운트, multi-camera |
+| TF/URDF/마운트/멀티카메라/스트리밍 | `references/robot-integration.md` | tf, urdf, mount, 마운트, multi-camera, streaming |
 | RViz 확인/SVO/OD 데모 | `references/usage-guide.md` | rviz, svo, recording, 데모 |
 | 녹화/재생/벤치마크 | `references/recording.md` | rosbag, svo, 녹화, 재생 |
+| NV12 raw access / zero-copy | `references/nv12-access.md` | nv12, raw, zero-copy, cuda, deepstream |
 
 인자가 없으면 아래 핵심 규칙을 기반으로 답변하고, 상세가 필요하면 해당 reference를 읽는다.
 
@@ -41,6 +42,7 @@ argument-hint: "[topic]"
 | ZED X One GS / 4K / HDR | `zedxonegs` / `zedxone4k` / `zedxonehdr` | GMSL2 (단안) |
 
 GMSL2 카메라는 ZED Link + Jetson 필수. ZED X One은 단안이라 위치 추적/매핑 미지원.
+ZED X One은 `sl::CameraOne` 클래스 사용 (`sl::Camera` 아님). IMU 데이터 지원 예정 (현재 미제공).
 
 ### QoS — Silent Failure 원인 1위
 
