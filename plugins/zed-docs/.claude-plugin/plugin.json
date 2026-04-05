@@ -1,6 +1,6 @@
 {
   "name": "zed-docs",
   "description": "ZED 카메라 ROS 2 통합 레퍼런스. zed_wrapper 설정, YOLO 3D 감지, DDS 튜닝, TF 정렬 등의 참조 문서를 제공합니다.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": ["zed", "ros2", "camera", "depth", "yolo", "stereolabs"]
 }

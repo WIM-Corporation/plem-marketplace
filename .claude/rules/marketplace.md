@@ -67,9 +67,11 @@
 
 ## 버전 관리
 
-- 상대 경로 플러그인: `marketplace.json` 항목에서만 version 설정
-- 외부 소스 플러그인: `plugin.json`에서만 version 설정
-- 양쪽 설정 시 `plugin.json`이 항상 우선하고 마켓플레이스 버전은 무시됨
+상세 정책은 `versioning.md` 참조.
+
+- 상대 경로 플러그인: `plugin.json`이 런타임 권한. `marketplace.json`에도 동일 버전을 반드시 동기화
+- 외부 소스 플러그인: `plugin.json`에서만 version 설정 (marketplace.json 버전은 무시됨)
+- Semantic Versioning 2.0.0 준수: MAJOR.MINOR.PATCH
 
 ## strict 모드
 
