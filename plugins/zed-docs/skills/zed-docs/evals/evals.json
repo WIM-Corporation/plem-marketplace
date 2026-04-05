@@ -1,0 +1,41 @@
+{
+  "skill_name": "zed-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "ZED X Mini 카메라를 Indy7 로봇 link6에 마운트했는데, launch 하면 카메라가 아무 에러 없이 데이터를 안 보내. publish_tf는 false로 설정했어. 뭐가 문제야?",
+      "expected_output": "depth_stabilization: 0 설정이 필요하다는 진단. pos_tracking_enabled: false도 함께 설정해야 한다는 안내. 필수 파라미터 조합(pos_tracking_enabled, publish_tf, publish_map_tf, depth_stabilization) 전체 제시.",
+      "assertions": [
+        {"text": "depth_stabilization: 0 설정 필요성을 명시적으로 언급", "type": "contains_concept"},
+        {"text": "pos_tracking_enabled: false 설정을 함께 안내", "type": "contains_concept"},
+        {"text": "param_overrides 사용 예시 또는 YAML 설정 예시 제공", "type": "contains_concept"},
+        {"text": "카메라 멈춤 원인(SDK가 TF를 기다림)을 설명", "type": "contains_concept"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Hand-Eye 캘리브레이션 결과가 quaternion으로 나왔는데 (qx=0.0031, qy=0.0015, qz=0.0, qw=1.0, tx=0.0626, ty=0.0019, tz=0.2342), 이걸 zedxm_mount.yaml에 어떻게 넣어야 해? camera_link 기준이 body center가 아니라 나사 구멍이라는데 z 보정도 필요한 거야?",
+      "expected_output": "quaternion to RPY 변환 코드(scipy Rotation). z 보정 설명(-0.016m). mount YAML 형식으로 결과 제시. camera_link reference point가 나사 구멍이라는 확인.",
+      "assertions": [
+        {"text": "scipy Rotation.from_quat + as_euler 변환 코드 제공", "type": "contains_concept"},
+        {"text": "z 보정값 -0.016m (body center -> camera_link) 설명", "type": "contains_concept"},
+        {"text": "rpy가 URDF joint origin의 rotation이라는 설명", "type": "contains_concept"},
+        {"text": "mount YAML 형식(camera_mount: x/y/z/roll/pitch/yaw)으로 결과 제시", "type": "contains_concept"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "카메라가 아래를 향하고 있는데 RViz에서 point cloud가 위쪽으로 나와. mount YAML의 rpy를 어떻게 조정해야 하는지 모르겠어. optical frame이랑 body frame이 다르다는데 그게 뭐야?",
+      "expected_output": "optical frame vs body frame 축 차이 설명. static_transform_publisher로 런타임 실험하는 방법. 90도 단위 brute-force 테스트 절차. 확정 후 mount YAML 반영 안내.",
+      "assertions": [
+        {"text": "body frame(Y-up, Z-backward) vs optical frame(Z-forward, Y-down) 축 차이 설명", "type": "contains_concept"},
+        {"text": "static_transform_publisher 런타임 실험 명령어 제공", "type": "contains_concept"},
+        {"text": "90도(pi/2) 단위 brute-force 테스트 방법 안내", "type": "contains_concept"},
+        {"text": "확정된 rpy를 mount YAML에 반영하라는 최종 해결 안내", "type": "contains_concept"}
+      ],
+      "files": []
+    }
+  ]
+}

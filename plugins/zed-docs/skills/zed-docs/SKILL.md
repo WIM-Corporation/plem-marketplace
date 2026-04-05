@@ -16,11 +16,11 @@ argument-hint: "[topic]"
 | 사용자가 묻는 것 | 읽어야 할 문서 | 핵심 키워드 |
 |----------------|--------------|------------|
 | 토픽/서비스/파라미터 전체 목록 | `references/ros2-api-reference.md` | topic, service, parameter, 파라미터 |
-| YOLO 3D detection 통합 | `references/yolo-integration.md` | yolo, object detection, onnx, 물체 감지 |
+| YOLO 3D detection 통합 | `references/yolo-integration.md` | yolo, object detection, onnx, 물체 감지, rviz bbox, 3d bounding box, rviz_plugin_zed_od, bbox 안 보임 |
 | YOLO config 작성법 | `references/yolo-config.md` | yolo config, class, detection_model |
 | DDS/네트워크 튜닝 | `references/dds-network.md` | dds, cyclone, 커널 버퍼, 토픽 안옴 |
 | 성능 최적화 | `references/optimization.md` | 느림, cpu, latency, frequency, ROI |
-| TF/URDF/마운트/멀티카메라/스트리밍 | `references/robot-integration.md` | tf, urdf, mount, 마운트, multi-camera, streaming |
+| TF/URDF/마운트/멀티카메라/스트리밍/캘리브레이션/방향 | `references/robot-integration.md` | tf, urdf, mount, 마운트, multi-camera, streaming, rpy, calibration, 캘리브레이션, point cloud 방향, optical frame, depth_stabilization, 카메라 멈춤 |
 | RViz 확인/SVO/OD 데모 | `references/usage-guide.md` | rviz, svo, recording, 데모 |
 | 녹화/재생/벤치마크 | `references/recording.md` | rosbag, svo, 녹화, 재생 |
 | NV12 raw access / zero-copy | `references/nv12-access.md` | nv12, raw, zero-copy, cuda, deepstream |

@@ -198,14 +198,31 @@ ros2 topic echo /zed/zed_node/obj_det/objects
 
 **RViz에서 3D 바운딩 박스 시각화:**
 
-`ObjectsStamped`는 RViz2 기본 display type이 아니다. 공식 `rviz-plugin-zed-od` 플러그인을 빌드하여 사용:
+`ObjectsStamped`는 RViz2 기본 display type이 아니다.
+`obj_det/objects` 토픽에 데이터가 발행되어도 RViz에 아무것도 표시되지 않는다면,
+`rviz_plugin_zed_od` 플러그인이 빌드되어 있지 않기 때문이다.
+
+이 플러그인은 `zed-ros2-wrapper`가 **아닌** 별도 저장소 `zed-ros2-examples`에 포함되어 있다.
 
 ```bash
-# 빌드 (zed-ros2-examples 저장소 필요)
+# 방법 1: deps.repos에 추가 (워크스페이스에서 관리)
+# deps.repos 파일에 추가:
+#   zed-ros2-examples:
+#     type: git
+#     url: https://github.com/stereolabs/zed-ros2-examples.git
+#     version: master
+vcs import src < deps.repos
+colcon build --packages-select rviz_plugin_zed_od zed_display_rviz2
+
+# 방법 2: 직접 clone
 cd ~/zed_ws/src
 git clone --depth 1 https://github.com/stereolabs/zed-ros2-examples.git
 cd ~/zed_ws && colcon build --packages-select rviz_plugin_zed_od zed_display_rviz2
+```
 
+빌드 후 RViz 실행:
+
+```bash
 # RViz만 시작 (ZED 노드는 이미 실행 중)
 ros2 launch zed_display_rviz2 display_zed_cam.launch.py \
     camera_model:=zedxm start_zed_node:=False
@@ -326,6 +343,19 @@ GPU에 따라 수 분 소요. 이후에는 캐싱되어 즉시 로드.
 # 콘솔 로그에서 확인:
 # [ZED] Optimizing ONNX model for TensorRT...
 # [ZED] Model optimization complete. Cached at /usr/local/zed/resources/
+```
+
+### `param_overrides` 문자열 값에 따옴표 금지
+
+`param_overrides`에서 문자열 값을 전달할 때 따옴표로 감싸면 안 된다.
+따옴표가 값의 일부로 파싱되어 파라미터 매칭에 실패한다.
+
+```bash
+# 잘못됨 — 따옴표가 값에 포함되어 크래시
+param_overrides:="object_detection.detection_model:='CUSTOM_YOLOLIKE_BOX_OBJECTS'"
+
+# 올바름 — 따옴표 없이 직접 지정
+param_overrides:="object_detection.detection_model:=CUSTOM_YOLOLIKE_BOX_OBJECTS"
 ```
 
 ### `imgsz`와 `custom_onnx_input_size` 일치

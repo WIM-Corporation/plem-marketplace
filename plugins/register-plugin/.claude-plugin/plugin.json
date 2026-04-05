@@ -1,6 +1,0 @@
-{
-  "name": "register-plugin",
-  "description": "zip으로 전달받은 스킬을 마켓플레이스 플러그인으로 등록/업데이트하는 운영 스킬",
-  "version": "1.0.0",
-  "keywords": ["marketplace", "plugin", "registration", "automation"]
-}
