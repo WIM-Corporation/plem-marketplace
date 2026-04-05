@@ -1,6 +1,9 @@
 # Claude Code local settings
 .claude/settings.local.json
 
+# Archives
+*.zip
+
 # OS
 .DS_Store
 Thumbs.db

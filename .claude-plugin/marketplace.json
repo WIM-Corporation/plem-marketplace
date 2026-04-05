@@ -7,5 +7,18 @@
     "description": "plem Claude Code plugin marketplace",
     "pluginRoot": "./plugins"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "plem-init",
+      "source": "./plugins/plem-init",
+      "description": "plem 기반 로봇 프로젝트 초기화 위자드",
+      "version": "1.0.0"
+    },
+    {
+      "name": "zed-docs",
+      "source": "./plugins/zed-docs",
+      "description": "ZED 카메라 ROS 2 통합 레퍼런스",
+      "version": "1.0.0"
+    }
+  ]
 }

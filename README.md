@@ -10,8 +10,8 @@ A plugin marketplace for distributing Claude Code extensions (skills, agents, ho
 
 | Plugin | Version | Description |
 | ------ | ------- | ----------- |
-
-> No plugins yet. See [Adding a Plugin](#adding-a-plugin) to get started.
+| [plem-init](plugins/plem-init) | 1.0.0 | plem-based robot project initialization wizard |
+| [zed-docs](plugins/zed-docs) | 1.0.0 | ZED camera ROS 2 integration reference |
 
 ## Quick Start
 
