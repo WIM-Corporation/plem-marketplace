@@ -179,14 +179,14 @@ ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zedxm \
 ```bash
 ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zedxm \
     ros_params_override_path:=/path/to/custom_object_detection.yaml \
-    param_overrides:="object_detection.od_enabled:=true;object_detection.detection_model:='CUSTOM_YOLOLIKE_BOX_OBJECTS';object_detection.enable_tracking:=true;object_detection.max_range:=20.0"
+    param_overrides:="object_detection.od_enabled:=true;object_detection.detection_model:=CUSTOM_YOLOLIKE_BOX_OBJECTS;object_detection.enable_tracking:=true;object_detection.max_range:=20.0"
 ```
 
 > **대안**: OD 클래스 정의 전용 launch arg `custom_object_detection_config_path`도 사용 가능:
 > ```bash
 > ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zedxm \
 >     custom_object_detection_config_path:=/path/to/custom_object_detection.yaml \
->     param_overrides:="object_detection.od_enabled:=true;object_detection.detection_model:='CUSTOM_YOLOLIKE_BOX_OBJECTS'"
+>     param_overrides:="object_detection.od_enabled:=true;object_detection.detection_model:=CUSTOM_YOLOLIKE_BOX_OBJECTS"
 > ```
 
 #### Step 3: 결과 확인
