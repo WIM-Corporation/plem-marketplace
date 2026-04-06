@@ -12,6 +12,7 @@ Claude Code 확장 기능(스킬, 에이전트, 훅, MCP 서버, LSP 서버)을 
 | -------- | ---- | ---- |
 | [plem-init](../plugins/plem-init) | 1.0.0 | plem 기반 로봇 프로젝트 초기화 위자드 |
 | [zed-docs](../plugins/zed-docs) | 1.1.1 | ZED 카메라 ROS 2 통합 레퍼런스 |
+| [ros-docs](../plugins/ros-docs) | 1.0.0 | ROS 2 공식 문서 기반 레퍼런스 (빌드, QoS, TF2, Launch, DDS, Executor) |
 
 
 ## 빠른 시작
