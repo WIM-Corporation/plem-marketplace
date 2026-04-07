@@ -1,0 +1,145 @@
+{
+  "skill_name": "zed-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "category": "beginner-setup",
+      "prompt": "ZED 카메라 처음 사서 Jetson Orin Nano에 연결하려는데 뭐부터 해야 하나? SDK 설치부터 첫 이미지 확인까지 전체 과정을 알려줘",
+      "expected_output": "SDK 설치 절차 (development/sdk-install.md), ZED Explorer로 카메라 확인, 첫 이미지 캡처 코드 안내",
+      "expected_routing": ["development/sdk-install.md", "development/zed-tools.md"]
+    },
+    {
+      "id": 2,
+      "category": "beginner-concept",
+      "prompt": "ZED 카메라의 depth sensing이 뭔지 개념부터 설명해줘. 스테레오 비전이 뭐고 depth map이 뭔지 모르겠어",
+      "expected_output": "스테레오 비전 원리, depth map 개념, 사용 가능한 depth mode 설명",
+      "expected_routing": ["sdk-overview/depth-sensing.md"]
+    },
+    {
+      "id": 3,
+      "category": "beginner-python",
+      "prompt": "파이썬으로 ZED 카메라에서 이미지 캡처하는 가장 간단한 코드 알려줘. pyzed 설치 방법부터",
+      "expected_output": "pyzed 설치 방법 + Python grab/retrieveImage 예제 코드",
+      "expected_routing": ["development/programming.md", "sdk-overview/camera.md"]
+    },
+    {
+      "id": 4,
+      "category": "intermediate-depth",
+      "prompt": "NEURAL vs NEURAL_PLUS vs NEURAL_LIGHT depth mode 차이가 뭐야? Jetson Orin NX 16에서 각각 FPS가 얼마나 나오나?",
+      "expected_output": "3가지 모드 비교 + Jetson 성능 벤치마크 테이블",
+      "expected_routing": ["sdk-overview/depth-sensing.md"]
+    },
+    {
+      "id": 5,
+      "category": "intermediate-recording",
+      "prompt": "SVO2 파일로 녹화하고 나중에 재생하는 방법. 압축 모드별 차이랑 하드웨어 인코딩 쓸 수 있는지",
+      "expected_output": "SVO 녹화/재생 API, 압축 모드 테이블, NVENC 하드웨어 인코딩 설명",
+      "expected_routing": ["sdk-overview/camera.md"]
+    },
+    {
+      "id": 6,
+      "category": "intermediate-tracking",
+      "prompt": "GEN_1이랑 GEN_3 positional tracking mode 차이가 뭐야? 어떤 상황에서 뭘 써야 하나?",
+      "expected_output": "GEN_1 vs GEN_3 비교, 성능 벤치마크, 권장 사용 시나리오",
+      "expected_routing": ["sdk-overview/positional-tracking.md"]
+    },
+    {
+      "id": 7,
+      "category": "intermediate-od",
+      "prompt": "ZED SDK 빌트인 object detection 모델 종류가 뭐가 있어? 각 모델 특성이랑 커스텀 YOLO 모델 연동하는 방법도",
+      "expected_output": "빌트인 OD 모델 목록 + 커스텀 디텍터 연동 방법",
+      "expected_routing": ["sdk-overview/object-detection.md"]
+    },
+    {
+      "id": 8,
+      "category": "intermediate-ros2",
+      "prompt": "zed-ros2-wrapper에서 발행하는 토픽 전체 목록 좀 알려줘. 특히 depth, point cloud, object detection 관련 토픽명이랑 메시지 타입",
+      "expected_output": "토픽 목록 + 메시지 타입 + QoS 설정",
+      "expected_routing": ["ros2/zed-node.md"]
+    },
+    {
+      "id": 9,
+      "category": "advanced-dds",
+      "prompt": "ZED ROS 2에서 포인트클라우드랑 이미지 토픽이 자꾸 드롭됨. Cyclone DDS XML 설정이랑 커널 버퍼 사이즈를 최적화하는 방법 알려줘. sysctl 설정 포함해서",
+      "expected_output": "Cyclone DDS XML 전체 설정 + sysctl 파라미터 + 트러블슈팅",
+      "expected_routing": ["ros2/network-tuning.md"]
+    },
+    {
+      "id": 10,
+      "category": "advanced-multicam",
+      "prompt": "ZED X 3대를 하나의 Jetson AGX Orin에서 동시 운용하려고 해. PTP 시간 동기화, GPU 메모리 관리, 멀티카메라 ROS 2 launch 설정까지 알려줘",
+      "expected_output": "멀티카메라 HW 요구사항 + PTP 설정 + ROS 2 multi-camera launch",
+      "expected_routing": ["sdk-overview/camera.md", "ros2/advanced.md"]
+    },
+    {
+      "id": 11,
+      "category": "advanced-custom-yolo",
+      "prompt": "YOLOv8 커스텀 학습한 모델을 ZED SDK에 네이티브로 통합하고 싶어. ONNX 익스포트 옵션이랑 ZED SDK에서 로드하는 전체 과정 설명해줘",
+      "expected_output": "YOLOv8 ONNX export 명령 + ZED SDK custom detector API + config 설정",
+      "expected_routing": ["integrations/yolo.md", "sdk-overview/object-detection.md"]
+    },
+    {
+      "id": 12,
+      "category": "advanced-robot-integration",
+      "prompt": "로봇 팔 end-effector에 ZED X Mini를 마운트했어. ROS 2에서 URDF xacro 통합이랑 TF 트리 설정, publish_tf false로 해야 하는 이유 설명해줘",
+      "expected_output": "URDF xacro 통합 코드 + TF 설정 + publish_tf false 이유",
+      "expected_routing": ["ros2/advanced.md"]
+    },
+    {
+      "id": 13,
+      "category": "advanced-streaming",
+      "prompt": "Jetson에서 ZED로 캡처한 영상을 원격 PC로 H.265 하드웨어 인코딩으로 스트리밍하는 방법. ROS 2 SDK bridge 사용하는 거랑 ZED SDK 네이티브 스트리밍이랑 비교해줘",
+      "expected_output": "ZED 네이티브 스트리밍 API + ROS 2 SDK bridge 설정 비교",
+      "expected_routing": ["sdk-overview/camera.md", "ros2/network-tuning.md"]
+    },
+    {
+      "id": 14,
+      "category": "troubleshooting-hw",
+      "prompt": "ZED X 카메라 이미지가 갑자기 흐릿해졌어. apt upgrade 한 직후부터 그런 것 같은데. libnvisppg.so 문제인가?",
+      "expected_output": "시스템 업데이트 후 blurry image 문제 + libnvisppg.so 복원 절차",
+      "expected_routing": ["cameras/zed-x.md"]
+    },
+    {
+      "id": 15,
+      "category": "troubleshooting-build",
+      "prompt": "Jetson에서 zed-ros2-wrapper colcon build하는데 libcuda.so not found 에러 남. CMAKE_LIBRARY_PATH 설정이 뭔가?",
+      "expected_output": "Jetson cmake 플래그 설명 (-DCMAKE_LIBRARY_PATH, -Wl,--allow-shlib-undefined)",
+      "expected_routing": ["ros2/zed-node.md"]
+    },
+    {
+      "id": 16,
+      "category": "troubleshooting-runtime",
+      "prompt": "SSH로 접속해서 ZED 노드 실행했더니 SIGSEGV로 크래시남. nvbufsurftransform: Could not get EGL display connection 에러가 뜨는데",
+      "expected_output": "headless 환경 NITROS EGL 문제 + disable_nitros 해결책",
+      "expected_routing": ["ros2/features.md", "ros2/zed-node.md"]
+    },
+    {
+      "id": 17,
+      "category": "embedded-zedlink",
+      "prompt": "ZED Link Duo 캡처카드를 AGX Orin에 장착하려는데 드라이버 설치 방법이랑 GMSL2 전원 요구사항 알려줘",
+      "expected_output": "ZED Link 드라이버 설치 + GMSL2 전원 계산법",
+      "expected_routing": ["embedded/zed-link.md"]
+    },
+    {
+      "id": 18,
+      "category": "docker",
+      "prompt": "ZED SDK를 Docker 컨테이너에서 쓰려는데, Jetson에서 GMSL2 카메라 접근하려면 볼륨 마운트를 어떻게 해야 하나? nvidia-container-toolkit 설정도",
+      "expected_output": "Jetson Docker 설정 + GMSL2 볼륨 마운트 + nvidia-container-toolkit",
+      "expected_routing": ["integrations/docker.md"]
+    },
+    {
+      "id": 19,
+      "category": "sensor-calibration",
+      "prompt": "ZED 2i의 magnetometer 캘리브레이션을 어떻게 하나? hard iron, soft iron 보정 절차 알려줘",
+      "expected_output": "자기계 캘리브레이션 7단계 절차 + ZED Sensor Viewer 사용법",
+      "expected_routing": ["sdk-overview/sensors.md"]
+    },
+    {
+      "id": 20,
+      "category": "advanced-isaac",
+      "prompt": "ZED 카메라를 Isaac ROS NITROS 파이프라인에 연결하려는데 일반 ROS 2 subscriber 대비 성능 차이가 어떻게 되나? GPU 메모리 전송 방식 설명해줘",
+      "expected_output": "NITROS GPU-memory transport 설명 + 성능 벤치마크 + 설정 방법",
+      "expected_routing": ["integrations/isaac-ros.md"]
+    }
+  ]
+}

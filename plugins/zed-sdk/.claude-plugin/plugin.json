@@ -1,6 +1,6 @@
 {
   "name": "zed-sdk",
   "description": "ZED SDK 공식 문서 레퍼런스 (카메라 API, 깊이 센싱, 객체 탐지, 바디 트래킹, ROS 2, Docker, YOLO)",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": ["zed", "stereolabs", "sdk", "depth", "ros2", "yolo", "camera", "object-detection"]
 }

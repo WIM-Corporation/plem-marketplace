@@ -12,6 +12,20 @@ The developer does not need to read docs directly — this skill guides the enti
 
 **Language adaptation:** Present all user-facing text (questions, labels, descriptions, summaries) in the user's language. The examples below use English as a reference; adapt to the session language.
 
+## Prerequisites
+
+plem 코어 라이브러리가 `/opt/plem/`에 설치되어 있어야 한다. 설치 방법은 환경에 따라 다르다:
+
+| 환경 | 설치 방법 |
+|------|----------|
+| Jetson (배포된 장비) | 사전 설치됨 — 별도 조치 불필요 |
+| Jetson (신규) | tarball 전달 후 `sudo tar xzf plem-*.tar.gz -C /opt/plem` |
+| 개발 장비 (WIM_CONTROL 있음) | `src/plem/packaging/install_local.sh` |
+
+설치 확인: `ls /opt/plem/setup.bash` — 파일이 없으면 설치가 필요하다.
+
+plem-init은 `/opt/plem`이 준비된 상태에서 **사용자 프로젝트를 초기화**하는 스킬이다. plem 자체의 설치는 다루지 않는다.
+
 ## Core Principles
 
 1. **Wizard-style** — One question at a time. Never dump all parameters in a single message.
@@ -217,8 +231,9 @@ cp src/plem-neuromeka/.claude/rules/launch-conventions.md .claude/rules/
 
 **Conditional rules:**
 - `gripper != none` → copy `gripper-integration.md`
+- `camera` is Stereolabs family → copy `zed-camera.md` (always-on 코딩 가드레일: QoS, 토픽명, TF 정합)
 
-**ZED References**: `/zed-sdk` 스킬이 ZED 레퍼런스를 자동 제공한다. 별도 복사 불필요.
+**ZED References**: `/zed-sdk` 스킬이 상세 레퍼런스를 on-demand로 제공한다. `zed-camera.md` rule과는 역할이 다르다 (rule = 항상 활성, skill = 호출 시 활성).
 
 Full rules list: see `references/rules-inventory.md`.
 
