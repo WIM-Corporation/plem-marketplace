@@ -6,15 +6,15 @@
 # 설치된 모든 항목을 역순으로 제거한다.
 #
 # 사용법:
-#   sudo bash uninstall-zed-ros2.sh              # 대화형 (단계별 확인)
+#   sudo bash uninstall-zed-ros2.sh              # ZED SDK + 워크스페이스만 제거 (ROS 2 유지, 기본)
 #   sudo bash uninstall-zed-ros2.sh --all        # ZED + ROS 2 의존성 + ROS 2 전체 제거
-#   sudo bash uninstall-zed-ros2.sh --zed-only   # ZED SDK + 워크스페이스만 제거 (ROS 2 유지)
-#   sudo bash uninstall-zed-ros2.sh --force      # 확인 없이 전체 제거
+#   sudo bash uninstall-zed-ros2.sh --force      # 확인 없이 제거
 #
 # 검증: nvcr.io/nvidia/l4t-jetpack:r36.4.0 컨테이너에서 설치→제거 전 과정 통과 확인
 # =============================================================================
 
 set -euo pipefail
+trap 'error "Step 실패. 이 스크립트를 다시 실행하면 이전 단계는 건너뛰고 실패 지점부터 재시도합니다."' ERR
 
 # ---------------------------------------------------------------------------
 # 색상 및 유틸
@@ -32,22 +32,22 @@ die()   { error "$*"; exit 1; }
 # ---------------------------------------------------------------------------
 # 인자 파싱
 # ---------------------------------------------------------------------------
-REMOVE_ROS_DEPS=true
-REMOVE_ROS_BASE=true
-ZED_ONLY=false
+REMOVE_ROS_DEPS=false
+REMOVE_ROS_BASE=false
+ZED_ONLY=true
 FORCE=false
 
 for arg in "$@"; do
     case "$arg" in
-        --zed-only)  ZED_ONLY=true; REMOVE_ROS_DEPS=false; REMOVE_ROS_BASE=false ;;
-        --all)       ;;  # 기본 동작
+        --zed-only)  ;;  # 기본 동작
+        --all)       ZED_ONLY=false; REMOVE_ROS_DEPS=true; REMOVE_ROS_BASE=true ;;
         --force)     FORCE=true ;;
         --help|-h)
             echo "Usage: sudo bash $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --all        ZED + ROS 2 의존성 + ROS 2 전체 제거 (기본)"
-            echo "  --zed-only   ZED SDK + 워크스페이스만 제거 (ROS 2 유지)"
+            echo "  --zed-only   ZED SDK + 워크스페이스만 제거, ROS 2 유지 (기본)"
+            echo "  --all        ZED + ROS 2 의존성 + ROS 2 전체 제거"
             echo "  --force      확인 없이 제거"
             exit 0
             ;;
@@ -178,13 +178,15 @@ if [ "$ZED_ONLY" = false ] && [ "$REMOVE_ROS_DEPS" = true ]; then
 
     ZED_DEPS=(
         ros-humble-zed-msgs
+        ros-humble-zed-description
         ros-humble-diagnostic-updater
         ros-humble-nmea-msgs
         ros-humble-geographic-msgs
         ros-humble-robot-localization
         ros-humble-xacro
         ros-humble-image-transport
-        ros-humble-theora-image-transport
+        ros-humble-image-transport-plugins
+        ros-humble-rmw-cyclonedds-cpp
         ros-humble-backward-ros
         nlohmann-json3-dev
         python3-vcstool
@@ -251,6 +253,24 @@ fi
 # Step 6: 잔여 파일 정리
 # ---------------------------------------------------------------------------
 info "Step 6: 잔여 파일 정리"
+
+# DDS 커널 버퍼 설정 제거 (--all일 때만 — ZED 외 다른 ROS 2 노드가 사용할 수 있음)
+if [ "$ZED_ONLY" = false ] && [ -f /etc/sysctl.d/60-zed-dds-buffers.conf ]; then
+    rm -f /etc/sysctl.d/60-zed-dds-buffers.conf
+    sysctl --system > /dev/null 2>&1 || true
+    info "  [OK] DDS 커널 버퍼 설정 제거"
+fi
+
+# RMW_IMPLEMENTATION 환경변수 제거 (--all일 때만)
+if [ "$ZED_ONLY" = false ]; then
+    for bashrc in /home/*/.bashrc /root/.bashrc; do
+        [ -f "$bashrc" ] || continue
+        if grep -q "RMW_IMPLEMENTATION" "$bashrc" 2>/dev/null; then
+            sed -i '/RMW_IMPLEMENTATION/d' "$bashrc"
+            info "  [OK] $(basename "$(dirname "$bashrc")")/.bashrc에서 RMW_IMPLEMENTATION 제거"
+        fi
+    done
+fi
 
 # rosdep 캐시
 if [ -d /root/.ros/rosdep ]; then

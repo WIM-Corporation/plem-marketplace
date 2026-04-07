@@ -1,5 +1,6 @@
 ---
-description: "ZED performance optimization — frequency tuning, latency, ROI masking, resolution scaling, IPC composition"
+description: "plem ZED 성능 최적화 — grab_compute_capping_fps, ROI manipulator 마스킹, pub_downscale 권장값, RViz Jetson 주의, diagnostics 모니터링"
+source: "zed-docs/references/optimization.md"
 ---
 
 # ZED 성능 최적화
@@ -63,11 +64,11 @@ region_of_interest:
   automatic_roi: true
 ```
 
-### 런타임 서비���
+### 런타임 서비스
 
 ```bash
 # ROI 설정
-ros2 service call /zed/zed_node/set_roi zed_interfaces/srv/SetROI \
+ros2 service call /zed/zed_node/set_roi zed_msgs/srv/SetROI \
     "{roi: '[[0.1,0.1],[0.9,0.1],[0.9,0.9],[0.1,0.9]]'}"
 
 # ROI 초기화

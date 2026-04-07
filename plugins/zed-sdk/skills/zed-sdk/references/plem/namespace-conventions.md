@@ -1,5 +1,6 @@
 ---
-description: "ZED ROS 2 API reference — complete topic/service/parameter/message specification for zed-ros2-wrapper"
+description: "plem ZED ROS 2 네임스페이스 규칙 — /{robot_id}/cam/ 토픽 패턴, QoS silent failure 방지, param_overrides 문법, 전체 토픽/서비스/파라미터 레퍼런스 (plem 주석 포함)"
+source: "zed-docs/references/ros2-api-reference.md"
 ---
 
 # ZED ROS 2 API 레퍼런스
@@ -24,7 +25,7 @@ description: "ZED ROS 2 API reference — complete topic/service/parameter/messa
 ## 1. 토픽
 
 > 소스: `zed_camera_component.cpp`, `zed_camera_component_video_depth.cpp`
-> 토픽 접두사: `/<camera_name>/<node_name>/` (기본: `/zed/zed_node/`)
+> 토픽 접두사: `/<camera_name>/<node_name>/` (기본: `/zed/zed_node/`). namespace 명시 시 `/<namespace>/<camera_name>/` (예: `/robot2/cam/`).
 
 ### 이미지
 
@@ -121,7 +122,7 @@ description: "ZED ROS 2 API reference — complete topic/service/parameter/messa
 ## 2. 서비스
 
 > 소스: `zed_camera_component.hpp` (16개), `zed_camera_one_component.hpp` (5개)
-> 서비스 접두사: `/<camera_name>/<node_name>/`
+> 서비스 접두사: `/<camera_name>/<node_name>/` (기본: `/zed/zed_node/`). namespace 명시 시 `/<namespace>/<camera_name>/`.
 
 ### ZedCamera (스테레오 카메라)
 
@@ -585,4 +586,3 @@ Skeleton3D      → Keypoint3D[70] keypoints
 
 > GMSL2 카메라는 ZED Link (Duo/Quad) 캡처보드 필요. Jetson에서만 지원.
 > ZED X One은 단안 카메라 (AI 기반 depth). 위치 추적/매핑 미지원.
-

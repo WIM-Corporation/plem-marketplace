@@ -18,6 +18,7 @@
 # =============================================================================
 
 set -euo pipefail
+trap 'error "Step 실패. 이 스크립트를 다시 실행하면 이전 단계는 건너뛰고 실패 지점부터 재시도합니다."' ERR
 
 # ---------------------------------------------------------------------------
 # 색상 및 유틸
@@ -83,7 +84,7 @@ if [ -d "$WS_DIR/src/zed-ros2-wrapper" ]; then
 else
     mkdir -p "$WS_DIR/src"
     cd "$WS_DIR/src"
-    git clone --depth 1 --branch master https://github.com/stereolabs/zed-ros2-wrapper.git
+    git clone --depth 1 --recursive --branch master https://github.com/stereolabs/zed-ros2-wrapper.git
     info "  [OK] zed-ros2-wrapper clone 완료"
 fi
 
@@ -100,13 +101,14 @@ info "  [OK] rosdep install 완료"
 # ---------------------------------------------------------------------------
 # Step 3: colcon build (Jetson 전용 cmake 플래그)
 # ---------------------------------------------------------------------------
-info "Step 3: colcon build"
+info "Step 3: colcon build (Jetson에서 10-30분 소요 — 중단하지 마세요)"
 info "  Jetson 전용 cmake 플래그 적용"
 info "    -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
 info "    -DCMAKE_CXX_FLAGS=-Wl,--allow-shlib-undefined"
 
 cd "$WS_DIR"
 
+set +e
 colcon build \
     --symlink-install \
     --cmake-args \
@@ -115,10 +117,11 @@ colcon build \
         '-DCMAKE_CXX_FLAGS=-Wl,--allow-shlib-undefined' \
         '--no-warn-unused-cli' \
     --parallel-workers "$(nproc)"
-
 BUILD_RESULT=$?
+set -e
+
 if [ $BUILD_RESULT -ne 0 ]; then
-    die "colcon build 실패 (exit code: $BUILD_RESULT)"
+    die "colcon build 실패 (exit code: $BUILD_RESULT). 재시도: rm -rf build/ install/ log/ && 이 스크립트 재실행"
 fi
 
 info "  [OK] colcon build 성공"

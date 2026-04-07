@@ -1,6 +1,6 @@
 # Rules Inventory — Package → Rules Mapping
 
-Inventory referenced by plem-init Step 5 when collecting and symlinking rules.
+Inventory referenced by plem-init Step 5 when collecting and copying rules.
 Lists the rules contained in each package repository's `.claude/rules/` directory and their installation conditions.
 
 ## plem-msgs Rules
@@ -34,12 +34,12 @@ Installed when `gripper` is an OnRobot family product.
 
 ## plem-stereolabs Rules
 
-ZED 코딩 규칙은 `/zed-docs` 스킬이 포함한다. 별도 rule symlink 불필요.
+ZED 코딩 규칙은 `/zed-sdk` 스킬이 포함한다. 별도 rule symlink 불필요.
 스킬이 ZED 관련 작업 시 자동 활성화되어 QoS, 토픽명, TF, headless 규칙을 제공한다.
 
 ## plem-stereolabs References
 
-ZED 카메라 상세 레퍼런스는 `/zed-docs` 스킬이 제공한다. plem-init은 references를 symlink하지 않는다.
+ZED 카메라 상세 레퍼런스는 `/zed-sdk` 스킬이 제공한다. plem-init은 references를 symlink하지 않는다.
 스킬이 ZED 관련 질문 시 자동 트리거되므로 별도 설치 불필요.
 
 ## Embedded Rules (generated directly by plem-init)
@@ -86,29 +86,29 @@ MoveIt is the upper-layer trajectory generation tool and belongs to the user pro
 MoveIt launch runs separately from plem_launch.py (allow at least 4 seconds between them).
 ```
 
-## Symlink Command Patterns
+## Copy Command Patterns
+
+규칙 원본은 `.repos`로 버전 고정된 `src/` 저장소에 있다. symlink 대신 copy를 사용하여 상대경로 해석 문제를 방지한다.
 
 ```bash
-mkdir -p .claude/rules .claude/references
+mkdir -p .claude/rules
 
 # plem-msgs (always)
-ln -sf src/plem-msgs/.claude/rules/interface-standards.md .claude/rules/
-ln -sf src/plem-msgs/.claude/rules/namespace-conventions.md .claude/rules/
-ln -sf src/plem-msgs/.claude/rules/urdf-srdf-standards.md .claude/rules/
-ln -sf src/plem-msgs/.claude/rules/description-conventions.md .claude/rules/
+cp src/plem-msgs/.claude/rules/interface-standards.md .claude/rules/
+cp src/plem-msgs/.claude/rules/namespace-conventions.md .claude/rules/
+cp src/plem-msgs/.claude/rules/urdf-srdf-standards.md .claude/rules/
+cp src/plem-msgs/.claude/rules/description-conventions.md .claude/rules/
 
 # plem-neuromeka (robot_vendor=neuromeka)
-ln -sf src/plem-neuromeka/.claude/rules/driver-conventions.md .claude/rules/
-ln -sf src/plem-neuromeka/.claude/rules/neuromeka-description-conventions.md .claude/rules/
-ln -sf src/plem-neuromeka/.claude/rules/launch-conventions.md .claude/rules/
-ln -sf src/plem-neuromeka/.claude/rules/testing-conventions.md .claude/rules/
+cp src/plem-neuromeka/.claude/rules/driver-conventions.md .claude/rules/
+cp src/plem-neuromeka/.claude/rules/neuromeka-description-conventions.md .claude/rules/
+cp src/plem-neuromeka/.claude/rules/launch-conventions.md .claude/rules/
+cp src/plem-neuromeka/.claude/rules/testing-conventions.md .claude/rules/
 
 # gripper != none (e.g. rg6 → OnRobot)
-ln -sf src/plem-msgs/.claude/rules/gripper-integration.md .claude/rules/
+cp src/plem-msgs/.claude/rules/gripper-integration.md .claude/rules/
 
-# camera is Stereolabs family — /zed-docs 스킬이 규칙+레퍼런스 모두 제공
-
-# camera is Stereolabs family — /zed-docs 스킬이 자동 제공 (symlink 불필요)
+# camera is Stereolabs family — /zed-sdk 스킬이 규칙+레퍼런스 자동 제공 (복사 불필요)
 ```
 
 ## Adding New Peripherals

@@ -13,6 +13,7 @@
 # =============================================================================
 
 set -euo pipefail
+trap 'error "Step 실패. 이 스크립트를 다시 실행하면 이전 단계는 건너뛰고 실패 지점부터 재시도합니다."' ERR
 
 # ---------------------------------------------------------------------------
 # 색상 및 유틸
@@ -162,6 +163,14 @@ net.core.rmem_max = 2147483647
 SYSCTL_EOF
         sysctl --system > /dev/null 2>&1
         info "  [OK] $SYSCTL_CONF 생성 및 적용 완료"
+    fi
+
+    # RMW_IMPLEMENTATION 환경변수 설정 (CycloneDDS 사용)
+    SUDO_USER_HOME=$(eval echo "~${SUDO_USER:-root}")
+    BASHRC="${SUDO_USER_HOME}/.bashrc"
+    if [ -f "$BASHRC" ] && ! grep -qF "RMW_IMPLEMENTATION" "$BASHRC" 2>/dev/null; then
+        echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> "$BASHRC"
+        info "  [OK] RMW_IMPLEMENTATION=rmw_cyclonedds_cpp → $BASHRC"
     fi
 fi
 

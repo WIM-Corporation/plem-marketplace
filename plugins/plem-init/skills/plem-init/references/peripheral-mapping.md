@@ -26,7 +26,7 @@ Determines which git repositories are required based on the model selected by th
 |-------|--------|-------------------|--------|------------|
 | zedxm | Stereolabs | `stereolabs_description` | **external** (zed-ros2-wrapper) | `plem-stereolabs` (description only) |
 
-**Note:** The camera description package provides only URDF/TF frames. A separate driver installation is required to receive camera image streams. See `camera-driver-setup.md`.
+**Note:** The camera description package provides only URDF/TF frames. A separate driver installation is required to receive camera image streams. See `zed-driver-setup.md`.
 
 ## .repos Generation Rules
 

@@ -37,10 +37,14 @@ colcon build
 source install/setup.bash
 
 # Launch lower control process
-./launch.sh
+ros2 launch neuromeka_robot_driver plem_launch.py \
+  robot_type:={robot_model} robot_id:={robot_id} \
+  gripper:={gripper} camera:={camera}
 
-# Override arguments
-./launch.sh use_fake_hardware:=true
+# Simulation (no real hardware)
+ros2 launch neuromeka_robot_driver plem_launch.py \
+  robot_type:={robot_model} robot_id:={robot_id} \
+  use_fake_hardware:=true
 ```
 
 ## Key Interfaces
@@ -59,22 +63,14 @@ CAMERA_VISION_ROW
 
 User code calls these interfaces to control the robot. Do not call plem internals directly.
 
-## MoveIt (upper-layer trajectory planning)
-
-MoveIt is the user's responsibility. `neuromeka_moveit_config` is a reference implementation — copy and customize.
-
-```bash
-# Launch MoveIt (wait 4+ seconds after lower control process)
-ros2 launch neuromeka_moveit_config move_group.launch.py \
-  robot_type:={robot_model} robot_id:={robot_id}
-```
+MOVEIT_SECTION
 
 CAMERA_SECTION
 
 ## Rules
 
 Rules in `.claude/rules/` are automatically applied during development.
-These are vendor-validated guidelines — do not modify the symlinked files.
+These are vendor-validated guidelines — do not modify directly. Update by re-running `/plem-init` or copying from `src/` packages.
 
 REFERENCES_SECTION
 ```
@@ -87,7 +83,7 @@ REFERENCES_SECTION
 
 Replace `GRIPPER_ROW` with:
 ```
-| GripperCommand | action | `/{robot_id}/gripper_action_server/gripper_command` | plem |
+| GripperCommand | action | `/{robot_id}/onrobot_driver/gripper_command` | plem |
 | GripperStatus | topic | `/{robot_id}/gripper_status` | plem |
 ```
 
@@ -101,6 +97,23 @@ Replace `CAMERA_VISION_ROW` with:
 ```
 
 If camera == none, remove the `CAMERA_VISION_ROW` line entirely.
+
+### MOVEIT_SECTION (MoveIt selected)
+
+Replace `MOVEIT_SECTION` with:
+```markdown
+## MoveIt (upper-layer trajectory planning)
+
+MoveIt is the user's responsibility. `{project_name}_moveit_config` is your project's MoveIt configuration — customize planner, SRDF, kinematics as needed.
+
+```bash
+# Launch MoveIt (wait 4+ seconds after lower control process)
+ros2 launch {project_name}_moveit_config move_group.launch.py \
+  robot_type:={robot_model} robot_id:={robot_id}
+```
+```
+
+If MoveIt was NOT selected, remove the `MOVEIT_SECTION` line entirely.
 
 ### CAMERA_SECTION (camera != none)
 
@@ -123,20 +136,17 @@ If camera == none, remove the `CAMERA_SECTION` line entirely.
 
 Replace `REFERENCES_SECTION` with:
 ```markdown
-## References
+## ZED Camera References
 
-Detailed reference docs in `.claude/references/` — not auto-loaded, read when needed:
+ZED 카메라 관련 상세 레퍼런스는 `/zed-sdk` 스킬이 자동 제공한다.
+ZED 관련 질문 시 스킬이 자동 트리거되어 QoS, 토픽명, TF, DDS 튜닝, YOLO 통합 등을 안내한다.
 
-| Document | Content |
-|----------|---------|
-| `zed-ros2-api-reference.md` | 전체 토픽/서비스/파라미터 레퍼런스 |
-| `zed-yolo-integration.md` | YOLO 3D detection 통합 가이드 |
-| `zed-usage-guide.md` | RViz, SVO recording, OD 데모 |
-| `zed-yolo-config.md` | YOLO ONNX config, class 정의 규칙 |
-| `zed-dds-network.md` | DDS/커널/MTU 네트워크 튜닝 (대용량 토픽 필수) |
-| `zed-optimization.md` | Frequency/latency/ROI 성능 최적화 |
-| `zed-robot-integration.md` | Manipulator TF, multi-camera, streaming |
-| `zed-recording.md` | SVO/rosbag 녹화·재생·벤치마크 |
+주요 레퍼런스 토픽:
+- **API**: 토픽/서비스/파라미터 전체 목록 (`/zed-sdk api`)
+- **DDS 튜닝**: 대용량 토픽 수신 필수 설정 (`/zed-sdk dds`)
+- **YOLO 통합**: 3D Object Detection (`/zed-sdk yolo`)
+- **TF/마운트**: Manipulator TF 정합, Hand-Eye 캘리브레이션 (`/zed-sdk tf`)
+- **성능 최적화**: Frequency, ROI, 해상도 조절 (`/zed-sdk optimization`)
 ```
 
 If camera == none, remove the `REFERENCES_SECTION` line entirely.

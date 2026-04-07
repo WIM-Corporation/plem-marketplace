@@ -13,6 +13,7 @@
 # =============================================================================
 
 set -euo pipefail
+trap 'error "Step 실패. 이 스크립트를 다시 실행하면 이전 단계는 건너뛰고 실패 지점부터 재시도합니다."' ERR
 
 # ---------------------------------------------------------------------------
 # 색상 및 유틸
@@ -34,25 +35,36 @@ SKIP_PYTHON=false
 SKIP_AI=false
 SKIP_TOOLS=true  # tools는 기본적으로 제외 (ZED Explorer 등 GUI 도구)
 FORCE_REINSTALL=false
+SDK_VERSION="5.2"
 
-for arg in "$@"; do
-    case "$arg" in
-        --no-python) SKIP_PYTHON=true ;;
-        --no-ai)     SKIP_AI=true ;;
-        --minimal)   SKIP_PYTHON=true; SKIP_AI=true ;;
-        --with-tools) SKIP_TOOLS=false ;;
-        --force)     FORCE_REINSTALL=true ;;
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --no-python) SKIP_PYTHON=true; shift ;;
+        --no-ai)     SKIP_AI=true; shift ;;
+        --minimal)   SKIP_PYTHON=true; SKIP_AI=true; shift ;;
+        --with-tools) SKIP_TOOLS=false; shift ;;
+        --force)     FORCE_REINSTALL=true; shift ;;
+        --sdk-version)
+            SDK_VERSION="$2"
+            shift 2
+            ;;
+        --sdk-version=*)
+            SDK_VERSION="${1#*=}"
+            shift
+            ;;
         --help|-h)
             echo "Usage: sudo bash $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --no-python   Python 바인딩(pyzed) 제외"
-            echo "  --no-ai       AI 모듈(Object Detection) 제외"
-            echo "  --minimal     AI + Python + Tools 모두 제외"
-            echo "  --with-tools  ZED Tools(Explorer, Diagnostic 등) 포함"
+            echo "  --no-python         Python 바인딩(pyzed) 제외"
+            echo "  --no-ai             AI 모듈(Object Detection) 제외"
+            echo "  --minimal           AI + Python + Tools 모두 제외"
+            echo "  --with-tools        ZED Tools(Explorer, Diagnostic 등) 포함"
+            echo "  --force             기존 설치 덮어쓰기"
+            echo "  --sdk-version VER   ZED SDK 버전 지정 (기본: 5.2)"
             exit 0
             ;;
-        *) die "알 수 없는 옵션: $arg (--help 참고)" ;;
+        *) die "알 수 없는 옵션: $1 (--help 참고)" ;;
     esac
 done
 
@@ -89,7 +101,7 @@ case "${L4T_RELEASE}.${L4T_MAJOR}" in
     36.3) SDK_L4T="l4t36.3" ;;
     36.4) SDK_L4T="l4t36.4" ;;
     36.5) SDK_L4T="l4t36.5" ;;
-    *)    die "지원하지 않는 L4T 버전: R${L4T_RELEASE}.${L4T_REVISION}" ;;
+    *)    die "지원하지 않는 L4T 버전: R${L4T_RELEASE}.${L4T_REVISION}. 지원 버전: 36.3, 36.4, 36.5 (JetPack 6.x). JetPack 확인: sudo apt-cache show nvidia-jetpack | grep Version" ;;
 esac
 
 info "  SDK URL 경로: ${SDK_L4T}"
@@ -152,7 +164,7 @@ info "  시스템 패키지 설치 완료"
 # ---------------------------------------------------------------------------
 info "Step 3: ZED SDK 다운로드"
 
-ZED_SDK_URL="https://download.stereolabs.com/zedsdk/5.2/${SDK_L4T}/jetsons"
+ZED_SDK_URL="https://download.stereolabs.com/zedsdk/${SDK_VERSION}/${SDK_L4T}/jetsons"
 INSTALLER="/tmp/ZED_SDK_Linux_JP.run"
 
 info "  URL: ${ZED_SDK_URL}"

@@ -15,7 +15,7 @@ The developer does not need to read docs directly — this skill guides the enti
 ## Core Principles
 
 1. **Wizard-style** — One question at a time. Never dump all parameters in a single message.
-2. **Vendor-defined rules** — Rules are not LLM-generated. Symlink pre-validated rules from package repositories.
+2. **Vendor-defined rules** — Rules are not LLM-generated. Copy pre-validated rules from package repositories.
 3. **Conditional installation** — Do not install rules/dependencies for unselected features (gripper, camera).
 4. **Verification required** — Confirm `colcon build` succeeds before declaring initialization complete.
 
@@ -92,9 +92,18 @@ If MoveIt is selected, Step 3 will copy `neuromeka_moveit_config` to `src/{proje
 
 `robot_id` (default: `indy`) and `plem_install` (default: `apt`) use defaults without asking. plem core is pre-installed on Jetson devices — source build is only for internal development.
 
+### Project Name Validation
+
+Validate the name before proceeding:
+- Must match `[a-z][a-z0-9_]*` (lowercase, underscores, start with letter)
+- No hyphens (Python/ament_python package naming rule), no spaces, no uppercase
+- If invalid, show the issue and suggest a corrected name (e.g. `My-Project` → `my_project`)
+
 ### Handling "Other" Selections
 
-AskUserQuestion automatically adds an "Other" option. If the user selects "Other" for robot/gripper/camera, ask them to specify the model name. Then check `references/peripheral-mapping.md` — if the model isn't listed, inform the user it's not yet supported and offer to proceed with "none" for that peripheral, or cancel initialization.
+AskUserQuestion automatically adds an "Other" option. If the user selects "Other" for **gripper or camera**, ask them to specify the model name. Then check `references/peripheral-mapping.md` — if the model isn't listed, inform the user it's not yet supported and offer to proceed with "none" for that peripheral.
+
+If the user selects "Other" for **robot**, inform that only Neuromeka models are currently supported and ask them to choose from the listed options or cancel initialization. Robot selection is required — there is no "none" option.
 
 ### Confirmation
 
@@ -183,36 +192,39 @@ Run scripts in order. Each script verifies prerequisites before proceeding.
 ### Step 4: colcon build + Verification
 
 ```bash
+rosdep install --from-paths src --ignore-src -r -y
 colcon build
 source install/setup.bash
 ```
 
-Diagnose and retry on failure. Guide system dependency installation if `plem_install=source` build fails.
+`rosdep install`이 시스템 의존성(rosbridge 등)을 자동 해결한다. Diagnose and retry on failure. Guide system dependency installation if `plem_install=source` build fails.
 
 ### Step 5: Rules Collection + Installation
 
-Read `references/rules-inventory.md` and symlink rules from imported packages to project `.claude/rules/`.
+Read `references/rules-inventory.md` and **copy** rules from imported packages to project `.claude/rules/`.
+
+Copy를 사용한다 (symlink 아님). 규칙 원본은 `.repos`로 버전 고정된 `src/` 저장소에 있으므로, symlink의 자동 동기화 이점이 없고 상대경로 해석 오류 위험만 있다.
 
 ```bash
 mkdir -p .claude/rules
-ln -sf src/plem-msgs/.claude/rules/interface-standards.md .claude/rules/
-ln -sf src/plem-neuromeka/.claude/rules/launch-conventions.md .claude/rules/
+cp src/plem-msgs/.claude/rules/interface-standards.md .claude/rules/
+cp src/plem-neuromeka/.claude/rules/launch-conventions.md .claude/rules/
 # ... add per selection
 ```
 
-**Embedded rules** (write as files, not symlinks):
+**Embedded rules** (generate directly):
 - `project-overview.md` — platform architecture summary, interface table
 
 **Conditional rules:**
-- `gripper != none` → symlink `gripper-integration.md`
+- `gripper != none` → copy `gripper-integration.md`
 
-**ZED References**: `/zed-docs` 스킬이 ZED 레퍼런스를 자동 제공한다. symlink 불필요.
+**ZED References**: `/zed-sdk` 스킬이 ZED 레퍼런스를 자동 제공한다. 별도 복사 불필요.
 
 Full rules list: see `references/rules-inventory.md`.
 
 ### Step 6: CLAUDE.md + README.md + Final Verification
 
-**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values. All topic/action paths use `/{robot_id}/` — never hardcode a specific robot_id like `/indy/`. Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections.
+**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values. All topic/action paths use `/{robot_id}/` — never hardcode a specific robot_id like `/indy/`. Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, MOVEIT_SECTION, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections.
 
 **`README.md`** (workspace root) — human-readable project documentation. Include:
 - Project overview (what robot, what peripherals)
@@ -247,10 +259,10 @@ Before declaring initialization complete:
 
 - [ ] `.repos` file generated + `vcs import` succeeded
 - [ ] `colcon build` succeeded
-- [ ] `.claude/rules/` contains symlinks matching selected configuration
+- [ ] `.claude/rules/` contains copied rules matching selected configuration
 - [ ] `.claude/CLAUDE.md` generated (reflects project configuration)
 - [ ] `README.md` generated (build/launch/interfaces documented)
 - [ ] User package `src/{project_name}/` exists
-- [ ] `/zed-docs` 스킬이 available skills에 표시됨 (if camera selected)
+- [ ] `/zed-sdk` 스킬 접근 가능 확인 — 개발 중 ZED 관련 질문 시 자동 참조됨 (if camera selected)
 - [ ] `scripts/zed/` copied with installation scripts (if camera selected)
 - [ ] MoveIt config copied (if selected in Round 3)

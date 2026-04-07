@@ -21,24 +21,9 @@ ZED_Explorer -a    # State: "AVAILABLE" 확인
 대용량 이미지/포인트 클라우드 토픽 수신을 위해 **반드시** DDS를 설정한다.
 설정 없이 진행하면 토픽이 silently drop된다.
 
-```bash
-# Cyclone DDS 설치
-sudo apt install ros-humble-rmw-cyclonedds-cpp
+`install-ros2-zed-deps.sh` 스크립트가 CycloneDDS 설치, 커널 버퍼 설정(`/etc/sysctl.d/60-zed-dds-buffers.conf`), `RMW_IMPLEMENTATION` 환경변수를 자동 처리한다.
 
-# 커널 버퍼 설정
-sudo tee /etc/sysctl.d/60-zed-buffers.conf << 'EOF'
-net.ipv4.ipfrag_time = 3
-net.ipv4.ipfrag_high_thresh = 134217728
-net.core.rmem_max = 2147483647
-EOF
-sudo sysctl --system
-
-# 환경변수 (~/.bashrc에 추가)
-echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc
-source ~/.bashrc
-```
-
-상세: `.claude/references/zed-dds-network.md` 참조.
+스크립트 없이 수동으로 설정하려면 `/zed-sdk dds` 참조.
 
 ## Step 2: 카메라 실행 + 토픽 확인
 
@@ -54,6 +39,17 @@ ros2 topic hz /zed/zed_node/rgb/color/rect/image
 
 정상이면 RGB 이미지가 ~30Hz로 publish됨.
 
+> **plem 로봇 통합 시 네임스페이스가 달라진다.**
+> 로봇에 마운트하면 `camera_name`을 URDF와 일치시켜야 한다: `camera_name:=cam` (plem 기본값).
+> 이 경우 토픽 경로는 `/{robot_id}/cam/...` (예: `/indy/cam/...`)가 된다.
+> 멀티카메라 시 `hand_cam`, `front_cam` 등으로 override.
+>
+> **필수 파라미터** (고정형 manipulator):
+> `pos_tracking.pos_tracking_enabled:=false`, `pos_tracking.publish_tf:=false`,
+> `pos_tracking.publish_map_tf:=false`, `depth.depth_stabilization:=0`.
+> `depth_stabilization`을 0으로 설정하지 않으면 카메라가 에러 없이 멈춘다.
+> 상세: `/zed-sdk tf` 참조.
+
 ## Step 3: 첫 이미지 Subscribe (Python)
 
 ```python
@@ -68,9 +64,9 @@ from sensor_msgs.msg import Image
 class ZedImageSub(Node):
     def __init__(self):
         super().__init__('zed_image_sub')
-        # QoS: ZED는 RELIABLE + VOLATILE. BEST_EFFORT도 호환됨.
+        # QoS: ZED 드라이버는 RELIABLE + VOLATILE로 발행. 매칭 권장.
         qos = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
         )
@@ -97,7 +93,8 @@ if __name__ == '__main__':
 ```
 
 > **주의**: QoS 불일치 시 데이터가 오지 않고 에러도 없음 (silent failure).
-> 반드시 `ReliabilityPolicy.BEST_EFFORT` 또는 `RELIABLE` + `HistoryPolicy.KEEP_LAST` 사용.
+> 반드시 `ReliabilityPolicy.RELIABLE` + `HistoryPolicy.KEEP_LAST` 사용.
+> 프레임 드롭이 허용되는 뷰어 용도에서만 `BEST_EFFORT` 사용 가능.
 
 ## Step 4: VisionInspection Action Server 스캐폴딩
 
@@ -166,15 +163,14 @@ ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zedxm \
 ros2 topic echo /zed/zed_node/obj_det/objects
 ```
 
-커스텀 YOLO 모델 사용: `.claude/references/zed-yolo-integration.md` 참조.
+커스텀 YOLO 모델 사용: `/zed-sdk yolo` 참조.
 
 ## 다음 단계
 
-| 목적 | 참조 문서 |
-|------|----------|
-| 토픽/서비스/파라미터 전체 목록 | `zed-ros2-api-reference.md` |
-| 성능 최적화 (frequency, ROI) | `zed-optimization.md` |
-| 네트워크 튜닝 상세 | `zed-dds-network.md` |
-| URDF TF 통합 | `zed-robot-integration.md` |
-| 데이터 녹화/재생 | `zed-recording.md` |
-| RViz 시각화, SVO 녹화 | `zed-usage-guide.md` |
+| 목적 | 참조 |
+|------|------|
+| 토픽/서비스/파라미터 전체 목록 | `/zed-sdk api` |
+| 성능 최적화 (frequency, ROI) | `/zed-sdk optimization` |
+| 네트워크 튜닝 상세 | `/zed-sdk dds` |
+| URDF TF 통합 | `/zed-sdk tf` |
+| 데이터 녹화/재생, RViz | `/zed-sdk recording` |
