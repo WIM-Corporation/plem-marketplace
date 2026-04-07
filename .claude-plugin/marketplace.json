@@ -12,7 +12,7 @@
       "name": "plem-init",
       "source": "./plugins/plem-init",
       "description": "plem 기반 로봇 프로젝트 초기화 위자드",
-      "version": "1.0.2"
+      "version": "1.1.0"
     },
     {
       "name": "zed-sdk",

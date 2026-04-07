@@ -239,7 +239,7 @@ Full rules list: see `references/rules-inventory.md`.
 
 ### Step 6: CLAUDE.md + README.md + Final Verification
 
-**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values. All topic/action paths use `/{robot_id}/` — never hardcode a specific robot_id like `/indy/`. Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, MOVEIT_SECTION, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections.
+**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values. All topic/action paths use `/{robot_id}/` — never hardcode a specific robot_id like `/indy/`. Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, MOVEIT_SECTION, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections. TRAJECTORY_SECTION is always included — it documents the fundamental trajectory control interface.
 
 **`README.md`** (workspace root) — human-readable project documentation. Include:
 - Project overview (what robot, what peripherals)
@@ -251,10 +251,18 @@ Full rules list: see `references/rules-inventory.md`.
     gripper:={gripper} camera:={camera}
   ```
 - MoveIt launch command (if MoveIt was selected)
+- Trajectory control quick start (SetMode → FJT workflow, always included)
 - Key ROS2 interfaces table
 - Package structure overview
 
 **Final verification:** `colcon build` succeeds.
+
+## Trajectory Control Guide
+
+plem은 하위 제어(궤적 수신 → 1kHz 실시간 실행)를 담당한다. 궤적 생성(상위 제어)은 사용자 프로젝트의 책임이다.
+MoveIt 선택 여부와 무관하게, `FollowJointTrajectory` 액션은 ros2_control의 `joint_trajectory_controller`가 항상 제공한다.
+
+커스텀 플래너 연동 워크플로우, Python 예제, 모니터링, 안전 가이드: `references/trajectory-control-guide.md` 참조.
 
 ## MoveIt Guide
 

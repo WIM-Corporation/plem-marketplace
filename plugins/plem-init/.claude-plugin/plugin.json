@@ -1,6 +1,6 @@
 {
   "name": "plem-init",
   "description": "plem 기반 로봇 프로젝트 초기화 위자드. ROS2 워크스페이스, Neuromeka 매니퓰레이터, ZED 카메라, 그리퍼 설정을 단계별로 안내합니다.",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "keywords": ["ros2", "robot", "plem", "neuromeka", "zed", "initialization"]
 }

@@ -63,6 +63,8 @@ CAMERA_VISION_ROW
 
 User code calls these interfaces to control the robot. Do not call plem internals directly.
 
+TRAJECTORY_SECTION
+
 MOVEIT_SECTION
 
 CAMERA_SECTION
@@ -97,6 +99,33 @@ Replace `CAMERA_VISION_ROW` with:
 ```
 
 If camera == none, remove the `CAMERA_VISION_ROW` line entirely.
+
+### TRAJECTORY_SECTION (always included)
+
+Replace `TRAJECTORY_SECTION` with:
+```markdown
+## Trajectory Control (custom planner integration)
+
+plem은 `FollowJointTrajectory` 액션으로 궤적을 수신하여 1kHz 실시간 루프에서 실행한다.
+MoveIt 또는 자체 플래너로 궤적을 생성하여 이 인터페이스로 전송하면 된다.
+
+**워크플로우:**
+1. `SetMode → TRAJECTORY` (mode: 2) — 컨트롤러 활성화
+2. `FollowJointTrajectory` 액션으로 궤적 전송
+3. 작업 완료 시 `SetMode → BRAKED` (mode: 0)
+
+| Interface | Path |
+|-----------|------|
+| SetMode | `/{robot_id}/plem/set_mode` |
+| FollowJointTrajectory | `/{robot_id}/joint_trajectory_controller/follow_joint_trajectory` |
+| JointState (모니터링) | `/{robot_id}/joint_states` |
+
+Joint names: `joint0` ~ `joint5` (6-DOF), positions 단위는 **라디안**.
+
+상세 가이드 (Python 예제 포함): `references/trajectory-control-guide.md` 참조.
+```
+
+This section is always included regardless of MoveIt selection. It documents the fundamental trajectory control interface that every plem project needs.
 
 ### MOVEIT_SECTION (MoveIt selected)
 
