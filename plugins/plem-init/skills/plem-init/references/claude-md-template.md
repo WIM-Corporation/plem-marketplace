@@ -33,6 +33,7 @@ src/
 ## Build / Run
 
 ```bash
+source /opt/plem/setup.bash     # 빌드 전 필수 — plem 코어 라이브러리 경로 등록
 colcon build
 source install/setup.bash
 

@@ -206,10 +206,13 @@ Run scripts in order. Each script verifies prerequisites before proceeding.
 ### Step 4: colcon build + Verification
 
 ```bash
+source /opt/plem/setup.bash   # plem 코어 라이브러리를 CMAKE_PREFIX_PATH에 등록
 rosdep install --from-paths src --ignore-src -r -y
 colcon build
 source install/setup.bash
 ```
+
+`source /opt/plem/setup.bash`를 빌드 전에 실행해야 한다. 이 단계를 빠뜨리면 `find_package(plem_robot)` 등이 실패한다. 이미 빌드한 적이 있다면 `rm -rf build install log` 후 재빌드가 필요하다 (colcon이 생성한 prefix chain에 `/opt/plem`이 누락되기 때문).
 
 `rosdep install`이 시스템 의존성(rosbridge 등)을 자동 해결한다. Diagnose and retry on failure. Guide system dependency installation if `plem_install=source` build fails.
 
@@ -243,7 +246,7 @@ Full rules list: see `references/rules-inventory.md`.
 
 **`README.md`** (workspace root) — human-readable project documentation. Include:
 - Project overview (what robot, what peripherals)
-- Build instructions (`colcon build && source install/setup.bash`)
+- Build instructions (`source /opt/plem/setup.bash && colcon build && source install/setup.bash`)
 - Launch command with actual parameters:
   ```
   ros2 launch neuromeka_robot_driver plem_launch.py \
