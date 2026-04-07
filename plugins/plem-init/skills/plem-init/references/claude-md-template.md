@@ -17,7 +17,7 @@ Conditional sections are included only when the corresponding feature is selecte
 | Robot | {robot_vendor} {robot_model} |
 | Gripper | {gripper_display} |
 | Camera | {camera_display} |
-| Namespace | /{robot_id}/ |
+| Robot ID (namespace) | `{robot_id}` — 모든 ROS2 토픽/액션이 `/{robot_id}/...` 하위에 격리됨 |
 
 ## Package Structure
 
@@ -30,14 +30,53 @@ src/
   # plem-stereolabs/      # (camera selected only)
 ```
 
-## Build / Run
+## Build
 
 ```bash
 source /opt/plem/setup.bash     # 빌드 전 필수 — plem 코어 라이브러리 경로 등록
-colcon build
+colcon build --symlink-install
 source install/setup.bash
+```
 
-# Launch lower control process
+## Quick Start
+
+```bash
+# ~/.bashrc에 1회 추가
+export PLEM_WORKSPACE="<이 프로젝트의 절대 경로>"
+
+# 실행
+plem
+```
+
+`{absolute_project_path}` placeholder를 실제 프로젝트 경로로 치환한다. 예: `$HOME/workspace/{project_name}`
+
+별도 source 명령이나 ros2 launch 인자를 외울 필요 없다.
+TUI가 ROS2 환경 source와 launch 인자 구성을 자동으로 처리한다.
+
+## Run
+
+### plem TUI (권장)
+
+`plem` TUI는 launch/stop/brake/freedrive/RViz/PlotJuggler를 키보드 단축키로 제어하는
+터미널 앱이다. `/opt/plem/tui/`에 설치되어 있으면 사용할 수 있다.
+
+```bash
+plem                             # TUI 실행
+plem-kill                        # 모든 plem 프로세스 강제 종료
+```
+
+TUI에서 robot 프로필 선택 → `s`(Start) → `r`(Brake release) → `f`(FreeDrive) 순으로 조작.
+TUI가 launch 인자(robot_type, robot_id, gripper, camera)를 로봇 프로필에서 자동 구성하므로
+사용자가 인자를 직접 지정할 필요 없다.
+
+### 직접 Launch (고급 — TUI 없이 수동 실행)
+
+launch 인자가 복잡하므로 일반적으로 TUI 사용을 권장한다. 디버깅이나 자동화 스크립트 등
+특수한 경우에만 직접 실행한다.
+
+```bash
+source install/setup.bash        # 매 터미널마다 필수 (TUI는 자동 처리)
+
 ros2 launch neuromeka_robot_driver plem_launch.py \
   robot_type:={robot_model} robot_id:={robot_id} \
   gripper:={gripper} camera:={camera}
@@ -47,6 +86,8 @@ ros2 launch neuromeka_robot_driver plem_launch.py \
   robot_type:={robot_model} robot_id:={robot_id} \
   use_fake_hardware:=true
 ```
+
+> `source install/setup.bash` 없이 실행하면 `package not found` 에러가 발생한다.
 
 ## Key Interfaces
 
@@ -152,7 +193,9 @@ Replace `CAMERA_SECTION` with:
 ## Camera
 
 `camera:={camera}` adds TF frames to the URDF for collision avoidance.
-Camera image streaming requires a separate driver (e.g., zed-ros2-wrapper for Stereolabs).
+Camera image streaming requires a separate driver — 이미 설치되어 있지 않다면 `scripts/zed/` 스크립트로 설치한다.
+
+개발 중 ZED 관련 질문(QoS, 토픽명, YOLO, TF 등)은 **`/zed-sdk`를 호출**하면 상세 레퍼런스를 제공한다.
 
 ### VisionInspection (developer-implemented)
 

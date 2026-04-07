@@ -46,7 +46,11 @@ If not provided as argument, ask as plain text (free-form input, AskUserQuestion
 
 ### Round 2: Robot + Peripherals
 
-Read `references/peripheral-mapping.md` and present **3 questions in a single AskUserQuestion call**:
+Read `references/peripheral-mapping.md` and present **3 questions in a single AskUserQuestion call**.
+
+로봇 모델 선택 결과에서 vendor를 자동 유도한다 (peripheral-mapping.md의 Vendor 컬럼 참조).
+현재는 모든 모델이 Neuromeka이므로 vendor는 항상 `neuromeka`가 되지만,
+새 벤더 추가 시 이 매핑이 자동으로 확장된다. vendor를 별도 질문으로 묻지 않는다.
 
 ```
 AskUserQuestion:
@@ -83,9 +87,14 @@ AskUserQuestion:
           description: "Stereolabs ZED X Mini — depth camera, adds TF frames to URDF (driver installed separately)"
 ```
 
+**Vendor 유도 규칙**: 모델 선택 후 `peripheral-mapping.md`의 Robot Models 테이블에서
+해당 모델의 Vendor 컬럼을 읽어 `robot_vendor` 값을 설정한다. 이 값은 이후 단계
+(MoveIt, rules, .repos 생성)에서 벤더별 패키지명을 참조하는 데 사용된다.
+
 ### Round 3: Additional Setup
 
-Ask conditional questions in a single AskUserQuestion call. Only include questions that apply:
+Ask conditional questions in a single AskUserQuestion call. Only include questions that apply.
+MoveIt 설명에서 벤더 패키지명을 Round 2에서 유도한 `robot_vendor`에 맞게 동적으로 표시한다:
 
 ```
 AskUserQuestion:
@@ -96,15 +105,30 @@ AskUserQuestion:
       multiSelect: false
       options:
         - label: "Yes (Recommended)"
-          description: "Copy neuromeka_moveit_config to your project as a starting point for trajectory planning"
+          description: "Copy {robot_vendor}_moveit_config to your project as a starting point for trajectory planning"
         - label: "No"
           description: "Skip MoveIt setup. Can be added manually later"
 
 ```
 
-If MoveIt is selected, Step 3 will copy `neuromeka_moveit_config` to `src/{project_name}_moveit_config/`, rename the package, and include it in the build.
+If MoveIt is selected, Step 3 will copy `{robot_vendor}_moveit_config` to `src/{project_name}_moveit_config/`, rename the package, and include it in the build.
 
-`robot_id` (default: `indy`) and `plem_install` (default: `apt`) use defaults without asking. plem core is pre-installed on Jetson devices — source build is only for internal development.
+**`robot_id` 유도**: 로봇 모델의 패밀리 이름에서 자동 생성한다.
+
+| 모델 | robot_id (기본값) |
+|------|------------------|
+| indy7, indy7_v2 | `indy` |
+| indy12, indy12_v2 | `indy` |
+
+robot_id는 ROS2 namespace로 사용된다 (`/{robot_id}/joint_states`, `/{robot_id}/controller_manager`).
+단일 로봇 프로젝트에서는 기본값을 그대로 쓰면 된다. multi-robot 프로젝트에서는
+사용자가 확인 단계에서 커스터마이징할 수 있다 (예: `indy1`, `indy2`).
+
+확인 테이블에 robot_id를 포함하되, 용도를 함께 설명한다:
+
+> | Robot ID | `indy` (ROS2 namespace — 토픽/액션 경로에 사용) |
+
+`plem_install` (default: `apt`)은 묻지 않는다. plem 코어는 Jetson에 사전 설치되어 있다.
 
 ### Project Name Validation
 
@@ -121,16 +145,19 @@ If the user selects "Other" for **robot**, inform that only Neuromeka models are
 
 ### Confirmation
 
-Summarize collected parameters and ask for confirmation before proceeding:
+Summarize collected parameters and ask for confirmation before proceeding.
+Robot ID의 용도를 함께 설명하여 사용자가 커스터마이징 여부를 판단할 수 있게 한다:
 
 > Initializing project with the following configuration:
 >
 > | Setting | Value |
 > |---------|-------|
 > | Project | `my_pick_app` |
-> | Robot | neuromeka indy7 |
+> | Robot | Neuromeka Indy7 |
 > | Gripper | rg6 (OnRobot) |
 > | Camera | None |
+> | MoveIt | Yes |
+> | Robot ID | `indy` (ROS2 namespace — `/{robot_id}/joint_states` 등 토픽 경로에 사용. 변경하려면 알려주세요) |
 >
 > Proceed?
 
@@ -152,6 +179,19 @@ Generate `.repos` based on collected parameters.
 - `plem-neuromeka` — when `robot_vendor=neuromeka`
 - `plem-onrobot` — when gripper is OnRobot family (rg6, etc.)
 - `plem-stereolabs` — when camera is Stereolabs family (zedxm, etc.)
+- `zed-ros2-wrapper` + `zed-ros2-examples` — when camera is Stereolabs family **AND** ZED SDK가 설치됨 (`/usr/local/zed/` 존재)
+
+ZED SDK 감지:
+```bash
+if [ -d /usr/local/zed ]; then
+    # SDK 설치됨 → .repos에 zed-ros2-wrapper, zed-ros2-examples 포함
+    # 같은 workspace에서 빌드되어 source install/setup.bash 하나로 사용 가능
+fi
+```
+
+SDK 미설치 시 wrapper를 `.repos`에서 제외한다 (빌드 시 ZED SDK 헤더가 필요하므로 실패).
+이 경우 `scripts/zed/` 스크립트로 SDK를 먼저 설치한 후, `.repos`에 수동 추가하거나
+`setup-zed-ros2-workspace.sh`로 별도 workspace에 빌드할 수 있다.
 
 Model-to-vendor-package mapping: see `references/peripheral-mapping.md`.
 
@@ -166,19 +206,34 @@ vcs import src < .repos
 
 ### Step 3: User ROS2 Package Scaffolding + MoveIt Setup
 
+ROS2 CLI(`ros2 pkg create`)는 `source /opt/ros/humble/setup.bash` 이후에만 사용 가능하다.
+Step 3의 모든 bash 명령은 반드시 source chain을 포함해야 한다:
+
 ```bash
+source /opt/ros/humble/setup.bash && source /opt/plem/setup.bash
 cd src && ros2 pkg create --build-type ament_python {project_name} \
   --dependencies rclpy control_msgs plem_msgs trajectory_msgs
 ```
 
 Add `neuromeka_msgs` if `robot_vendor=neuromeka`.
 
-**If MoveIt was selected**, copy the reference implementation and rename:
+**If MoveIt was selected**, copy the vendor's reference implementation and rename.
+vendor 패키지명은 `{robot_vendor}_moveit_config`로 유도한다.
+
+리네이밍은 **한 번에 완결**해야 한다. 하나씩 발견하며 고치는 방식은 사용자에게 불안감을 준다.
+다음 4가지를 빠짐없이 처리한다:
 
 ```bash
-cp -r src/plem-neuromeka/neuromeka_moveit_config src/{project_name}_moveit_config
-# Update package.xml: <name>{project_name}_moveit_config</name>
-# Update CMakeLists.txt: project({project_name}_moveit_config)
+# 1. 디렉토리 복사
+cp -r src/plem-{robot_vendor}/{robot_vendor}_moveit_config src/{project_name}_moveit_config
+
+# 2. Python 패키지 디렉토리 rename (colcon/ament이 패키지명으로 디렉토리를 기대)
+mv src/{project_name}_moveit_config/{robot_vendor}_moveit_config \
+   src/{project_name}_moveit_config/{project_name}_moveit_config
+
+# 3. package.xml: <name> 변경
+# 4. CMakeLists.txt: project(), ament_python_install_package(), install(PROGRAMS ...) 경로 모두 변경
+#    — {robot_vendor}_moveit_config → {project_name}_moveit_config 전역 치환
 ```
 
 This gives the user a working MoveIt config they can customize (planner, SRDF, kinematics).
@@ -206,11 +261,14 @@ Run scripts in order. Each script verifies prerequisites before proceeding.
 ### Step 4: colcon build + Verification
 
 ```bash
+source /opt/ros/humble/setup.bash
 source /opt/plem/setup.bash   # plem 코어 라이브러리를 CMAKE_PREFIX_PATH에 등록
 rosdep install --from-paths src --ignore-src -r -y
-colcon build
+colcon build --symlink-install
 source install/setup.bash
 ```
+
+`--symlink-install`은 Python 패키지를 symlink로 설치하여 소스 수정이 재빌드 없이 즉시 반영되게 한다. 개발 중 권장.
 
 `source /opt/plem/setup.bash`를 빌드 전에 실행해야 한다. 이 단계를 빠뜨리면 `find_package(plem_robot)` 등이 실패한다. 이미 빌드한 적이 있다면 `rm -rf build install log` 후 재빌드가 필요하다 (colcon이 생성한 prefix chain에 `/opt/plem`이 누락되기 때문).
 
@@ -242,17 +300,22 @@ Full rules list: see `references/rules-inventory.md`.
 
 ### Step 6: CLAUDE.md + README.md + Final Verification
 
-**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values. All topic/action paths use `/{robot_id}/` — never hardcode a specific robot_id like `/indy/`. Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, MOVEIT_SECTION, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections. TRAJECTORY_SECTION is always included — it documents the fundamental trajectory control interface.
+**`.claude/CLAUDE.md`** — agent context file. Read `references/claude-md-template.md` and generate by replacing `{...}` placeholders with actual parameter values.
+
+**파라미터 전파 규칙**: 확인 테이블에서 사용자가 승인한 값을 그대로 사용한다.
+특히 `{robot_id}`는 확인 테이블의 Robot ID 값과 정확히 일치해야 한다.
+다른 프로젝트(zed-yolo 등)의 `robot_id` 값이나 시스템 환경의 값을 사용하지 않는다.
+`/{robot_id}/`를 사용하되, 절대 리터럴 값(예: `/indy/`, `/robot2/`)을 하드코딩하지 않는다.
+
+Conditional sections (GRIPPER_ROW, CAMERA_VISION_ROW, MOVEIT_SECTION, CAMERA_SECTION, REFERENCES_SECTION) are included or removed based on user selections. TRAJECTORY_SECTION is always included — it documents the fundamental trajectory control interface.
 
 **`README.md`** (workspace root) — human-readable project documentation. Include:
 - Project overview (what robot, what peripherals)
-- Build instructions (`source /opt/plem/setup.bash && colcon build && source install/setup.bash`)
-- Launch command with actual parameters:
-  ```
-  ros2 launch neuromeka_robot_driver plem_launch.py \
-    robot_type:={robot_model} robot_id:={robot_id} \
-    gripper:={gripper} camera:={camera}
-  ```
+- Build instructions (`source /opt/plem/setup.bash && colcon build --symlink-install && source install/setup.bash`)
+- **plem TUI** (`plem`, `plem-kill`) — 권장 실행 방법. TUI가 launch/stop/brake/freedrive를 관리한다.
+  `PLEM_WORKSPACE` 설정과 기본 조작 키(`s`/`r`/`f`)를 안내한다.
+- 직접 Launch (TUI 없이 `ros2 launch`) — `source install/setup.bash` 필수 안내 포함.
+  이 안내 없이 `ros2 launch`만 보여주면 사용자가 `package not found`를 만난다.
 - MoveIt launch command (if MoveIt was selected)
 - Trajectory control quick start (SetMode → FJT workflow, always included)
 - Key ROS2 interfaces table
@@ -292,3 +355,46 @@ Before declaring initialization complete:
 - [ ] `/zed-sdk` 스킬 접근 가능 확인 — 개발 중 ZED 관련 질문 시 자동 참조됨 (if camera selected)
 - [ ] `scripts/zed/` copied with installation scripts (if camera selected)
 - [ ] MoveIt config copied (if selected in Round 3)
+
+## Post-Initialization — 사용자에게 안내
+
+초기화 완료 후 반드시 "다음 단계" 안내를 제공한다. 사용자가 자연스럽게 첫 실행까지
+도달할 수 있어야 한다. 별도 source 명령 없이 `plem` TUI를 바로 실행하는 것이 가장
+간단한 경로다:
+
+```
+프로젝트 초기화가 완료되었습니다!
+
+다음 단계:
+
+  1. ~/.bashrc에 한 줄 추가 (최초 1회):
+     export PLEM_WORKSPACE="{absolute_project_path}"
+
+  2. 새 터미널을 열고 실행:
+     plem
+
+TUI에서 로봇 프로필을 선택하고 `s`(Start)로 바로 시작할 수 있습니다.
+별도 source 명령이나 ros2 launch 인자를 외울 필요 없습니다.
+```
+
+카메라를 선택한 경우 추가 안내:
+
+```
+카메라 활용 (ZED):
+
+  카메라 이미지를 사용하려면 ZED SDK + ROS 2 드라이버가 필요합니다.
+  이미 설치되어 있다면 바로 사용할 수 있고, 아직이라면:
+    bash scripts/zed/install-ros2-zed-deps.sh
+    bash scripts/zed/install-zed-sdk.sh
+    bash scripts/zed/setup-zed-ros2-workspace.sh
+
+  개발 중 ZED 관련 질문이 있으면 `/zed-sdk` 를 호출하세요.
+  QoS 설정, 토픽명, YOLO 통합, TF 정합 등의 레퍼런스를 제공합니다.
+```
+
+`ros2 launch ...`로 직접 실행하는 방법은 README.md에 "고급" 옵션으로 문서화되어 있으나,
+launch 인자가 복잡하므로 TUI 사용을 권장한다. TUI가 launch 인자를 자동으로 구성해준다.
+
+**`.repos`에 `zed-ros2-wrapper`를 포함하지 않는 이유**: ZED ROS 2 wrapper는 빌드 시
+ZED SDK 헤더가 필요하다. `.repos`에 넣으면 SDK 미설치 상태에서 `colcon build`가 실패한다.
+따라서 SDK 설치 → wrapper 빌드를 `scripts/zed/` 스크립트로 순차 관리한다.

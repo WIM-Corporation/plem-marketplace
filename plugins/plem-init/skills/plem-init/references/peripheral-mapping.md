@@ -26,7 +26,9 @@ Determines which git repositories are required based on the model selected by th
 |-------|--------|-------------------|--------|------------|
 | zedxm | Stereolabs | `stereolabs_description` | **external** (zed-ros2-wrapper) | `plem-stereolabs` (description only) |
 
-**Note:** The camera description package provides only URDF/TF frames. A separate driver installation is required to receive camera image streams. See `zed-driver-setup.md`.
+**Note:** The camera description package provides only URDF/TF frames.
+Camera image streaming requires `zed-ros2-wrapper` — included in `.repos` when ZED SDK is detected.
+If SDK is not installed, see `zed-driver-setup.md` for the installation scripts.
 
 ## .repos Generation Rules
 
@@ -60,6 +62,16 @@ repositories:
   plem-stereolabs:
     type: git
     url: https://github.com/WIM-Corporation/plem-stereolabs.git
+    version: master
+
+  # camera is Stereolabs family AND ZED SDK installed (/usr/local/zed/ exists)
+  zed-ros2-wrapper:
+    type: git
+    url: https://github.com/stereolabs/zed-ros2-wrapper.git
+    version: master
+  zed-ros2-examples:
+    type: git
+    url: https://github.com/stereolabs/zed-ros2-examples.git
     version: master
 ```
 
