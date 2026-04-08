@@ -18,7 +18,7 @@
       "name": "zed-sdk",
       "source": "./plugins/zed-sdk",
       "description": "ZED SDK 공식 문서 레퍼런스 (카메라 API, 깊이 센싱, 객체 탐지, ROS 2, YOLO)",
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     {
       "name": "ros-docs",

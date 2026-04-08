@@ -1,5 +1,5 @@
 ---
-description: "plem YOLO 3D Object Detection 통합 — 커스텀 ONNX 모델 설정, 농작물 class config (is_grounded, is_static), imgsz 3곳 일치, TensorRT 캐시 무효화, param_overrides 함정, common_stereo.yaml 수정 금지"
+description: "plem YOLO 3D Object Detection 통합 — 커스텀 ONNX 모델 설정, 농작물 class config (is_grounded, is_static), imgsz 3곳 일치, TensorRT 캐시 무효화, param_overrides 함정, common_stereo.yaml 수정 금지, 근거리 OD 3D bbox 거리 의존성과 depth median 미티게이션"
 source: "zed-docs/references/yolo-integration.md + yolo-config.md"
 ---
 
@@ -326,10 +326,31 @@ dimensions_3d: [0.1, 0.3, 0.1]  # [w, h, l] [m]
 |--------|----------------------|------|
 | ZED 2 / 2i | 0.3 ~ 15m | USB 3.0 |
 | ZED X | 0.2 ~ 15m | GMSL2 |
-| ZED X Mini | 0.1 ~ 8m (2.2mm) / 0.15 ~ 12m (4mm) | GMSL2, 근거리 최적화 |
+| ZED X Mini | 0.1 ~ 8m (2.2mm) / 0.15 ~ 12m (4mm) | GMSL2, 짧은 baseline |
 | ZED X HDR Max | 0.2 ~ 20m | GMSL2, 최대 범위 |
 
-> ZED X Mini는 베이스라인이 짧아 근거리에 최적화. Body Tracking 유효 거리는 약 6m.
+> ZED X Mini는 베이스라인이 짧아 다른 모델보다 가까운 거리까지 disparity를 잡을 수 있다 — 단, "잡을 수 있다"와 "안정적이다"는 다르다 (아래 참조). Body Tracking 유효 거리는 약 6m.
+
+### "최소 거리"는 "안정 거리"가 아니다
+
+위 표의 하한(`depth_minimum_distance`)은 disparity 매칭이 *가능한* 한계이지, Object Detection 3D 출력(`position`, `dimensions_3d`, `bounding_box_3d.corners`)이 *안정한* 한계가 아니다. 객체가 최소 거리에 근접할수록 disparity가 stereo search window 끝단에 몰려 매칭 노이즈가 커지고, 그 노이즈가 depth map → OD 3D 출력으로 그대로 전파된다 — 프레임마다 `corners`가 cm 단위로 점프하는 형태로 관찰된다.
+
+베이스라인이 짧은 모델일수록(ZED X Mini가 대표적) 이 현상이 더 가까운 거리부터 시작된다. 안정 작동 거리는 최소 거리 자체가 아니라 그보다 충분히 떨어진 영역으로 잡아야 한다. 이는 SDK 알고리즘 한계가 아니라 stereo 광학의 본질적 특성이라 `NEURAL_PLUS`나 `depth_stabilization`으로 해결되지 않는다.
+
+> pendant·RViz에서 박스가 튀는 현상을 보면 먼저 카메라-객체 거리를 의심한다. 거리를 늘려서 멈추면 위 원인이 맞다.
+
+### 근거리에서 안정한 3D 위치가 필요하면
+
+`bounding_box_3d.corners`를 그대로 사용하지 말고, **2D bbox 또는 마스크 영역의 depth median**을 집계해 pinhole 역투영으로 3D 위치를 산출한다. 단일 픽셀 노이즈가 median으로 흡수되므로 corners보다 거리 의존성이 훨씬 약하다 — 동일 파이프라인으로 근거리(픽킹 직전)와 원거리(접근 단계)를 모두 처리할 수 있다.
+
+```python
+# 개념 코드 — OD 결과 + depth map 조합
+depths = depth_map[mask]                           # OD 2D mask 영역만
+z = np.median(depths[np.isfinite(depths) & (depths > 0)])
+u, v = bbox_2d_center
+x = (u - cx) * z / fx                              # pinhole 역투영 (left rectified)
+y = (v - cy) * z / fy
+```
 
 ---
 
