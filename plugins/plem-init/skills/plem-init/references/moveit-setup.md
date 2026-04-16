@@ -41,9 +41,11 @@ cp -r src/plem-neuromeka/neuromeka_moveit_config src/my_moveit_config
 
 3. Modify the required configuration:
    - `config/kinematics.yaml` — IK solver configuration
-   - `config/ompl_planning.yaml` — OMPL planner pipeline
+   - `config/ompl_planning.yaml` — OMPL planner definitions (group-neutral; per-group section is injected at launch time by `moveit_utils.inject_ompl_group()`)
+   - `config/pilz_industrial_motion_planner_planning.yaml` — Pilz pipeline params
+   - `config/pilz_cartesian_limits.yaml` — PTP/LIN/CIRC Cartesian limits
+   - `config/planner_routing.yaml` — **(intent, move_type) → (pipeline, planner)** mapping consumed by `plan_trajectory_server`. Edit this to add new pipelines (cuMotion, CHOMP, STOMP) without code changes.
    - `srdf/indy.srdf.xacro` — custom planning groups, disable_collisions
-   - `config/pilz_cartesian_limits.yaml` — Cartesian limit configuration
 
 4. Build and launch:
 
@@ -57,8 +59,10 @@ ros2 launch my_moveit_config move_group.launch.py
 | File | Purpose |
 |------|---------|
 | `config/kinematics.yaml` | IK solver (KDL, ikfast, etc.) configuration |
-| `config/ompl_planning.yaml` | OMPL planner pipeline |
+| `config/ompl_planning.yaml` | OMPL planner definitions (group-neutral; runtime-injected per-group section) |
+| `config/pilz_industrial_motion_planner_planning.yaml` | Pilz planner parameters |
 | `config/pilz_cartesian_limits.yaml` | PTP/LIN/CIRC Cartesian limits |
+| `config/planner_routing.yaml` | `(motion_intent, move_type) → (pipeline, planner)` routing table |
 | `config/servo.yaml` | MoveIt Servo (real-time servoing) configuration |
 | `srdf/indy.srdf.xacro` | SRDF (planning groups, collision disabling) |
 | `launch/move_group.launch.py` | MoveIt move_group node launch |

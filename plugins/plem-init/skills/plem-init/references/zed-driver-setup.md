@@ -11,23 +11,56 @@ To receive camera image streams, install the camera vendor's official ROS2 drive
 | Mount configuration (Hand-Eye calibration YAML, `camera_link` screw-hole 기준) | Vision processing (YOLO, etc.) |
 | Standard interface (`plem_msgs/action/VisionInspection`) | VisionInspection action server |
 
+## ZED SDK vs ZED Link Driver
+
+GMSL2 카메라(ZED X, ZED X Mini)를 사용하려면 **두 가지를 별도로 설치**해야 한다:
+
+| 구성요소 | 설치 대상 | 역할 |
+|---------|----------|------|
+| **ZED SDK** | API 라이브러리 (`libsl_zed.so`, pyzed, ZED Tools) | 카메라 제어 API |
+| **ZED Link Driver** | 커널 모듈 (`sl_zedx.ko`, `max96712.ko`) + `zed_x_daemon` | GMSL2 하드웨어 인식 |
+
+USB 카메라(ZED 2, ZED Mini)는 ZED SDK만으로 충분하다. ZED Link Driver는 GMSL2 전용.
+
+**PREEMPT_RT 커널**: ZED Link Driver는 RT 커널용 `.deb`를 별도 배포한다 (파일명에 `-rt-` 포함).
+RT 커널에서 표준 커널용 드라이버를 설치하면 커널 모듈이 로드되지 않는다.
+`install-zed-link-driver.sh`가 `uname -v`로 커널 종류를 자동 감지하여 올바른 변형을 선택한다.
+
+**L4T 호환성**: 드라이버 URL은 L4T minor 버전(36.3, 36.4, 36.5)으로 매핑된다.
+같은 minor 내 patch 버전(36.4.0, 36.4.4, 36.4.7 등)은 동일 드라이버를 사용한다.
+
+> 검증 이력: L4T 36.4 (PREEMPT_RT) 환경에서
+> ZED Link Duo RT 드라이버 (v1.4.1) 설치 후 `sl_zedx`, `max96712` 모듈 정상 로드 확인.
+
 ## Installation Scripts (Recommended)
 
 plem-init bundles installation scripts at `scripts/zed/`. Run them in order:
 
-| # | Script | Purpose |
-|---|--------|---------|
-| 1 | `install-ros2-zed-deps.sh` | ROS 2 Humble + ZED ROS 2 dependency packages |
-| 2 | `install-zed-sdk.sh` | ZED SDK (auto-detects Jetson L4T version) |
-| 3 | `setup-zed-ros2-workspace.sh` | Clone zed-ros2-wrapper, apply Jetson cmake flags, build |
-| - | `uninstall-zed-ros2.sh` | ZED SDK + ROS 2 환경 역순 제거 (`--zed-only`, `--all`, `--force`) |
+| # | Script | Purpose | 범위 |
+|---|--------|---------|------|
+| 1 | `install-ros2-zed-deps.sh` | ROS 2 Humble + ZED ROS 2 dependency packages | 시스템 |
+| 2 | `install-zed-sdk.sh` | ZED SDK + Tools (auto-detects Jetson L4T version) | 시스템 |
+| 3 | `install-zed-link-driver.sh` | GMSL2 커널 모듈 + zed_x_daemon (ZED X/X Mini 전용) | 시스템 |
+| 4 | `setup-zed-ros2-workspace.sh` | Clone zed-ros2-wrapper, apply Jetson cmake flags, build | 유저 |
+| - | `uninstall-zed-ros2.sh` | ZED SDK + ROS 2 환경 역순 제거 (`--zed-only`, `--all`, `--force`) | - |
+
+시스템 스크립트(1~3)는 장비당 1회, sudo 필요. 유저 스크립트(4)는 프로젝트별.
+USB 카메라(ZED 2, ZED Mini)는 스크립트 3을 건너뛴다.
 
 Each script verifies prerequisites before proceeding. Use `--help` for options.
 
 ```bash
-# Example: full installation sequence
+# Example: GMSL2 카메라 전체 설치 (ZED X, ZED X Mini)
 bash scripts/zed/install-ros2-zed-deps.sh
-bash scripts/zed/install-zed-sdk.sh
+sudo bash scripts/zed/install-zed-sdk.sh
+sudo bash scripts/zed/install-zed-link-driver.sh --card duo   # mono|duo|quad
+sudo reboot
+# 리부트 후:
+bash scripts/zed/setup-zed-ros2-workspace.sh
+
+# Example: USB 카메라 (ZED 2, ZED Mini) — ZED Link 드라이버 불필요
+bash scripts/zed/install-ros2-zed-deps.sh
+sudo bash scripts/zed/install-zed-sdk.sh
 bash scripts/zed/setup-zed-ros2-workspace.sh
 ```
 
@@ -143,6 +176,9 @@ Hand-Eye calibration result: `neuromeka_integrations/urdf/sensors/config/zedxm_m
 | NumPy version conflict | pyzed vs JetPack PyTorch | Use separate venv, or access via ROS topics only |
 | `SCHED_FIFO` permission error | Missing RT privileges | `sudo` or set `thread_sched_policy: SCHED_BATCH` in config |
 | SIGSEGV (`Could not get EGL display connection`) | Headless(SSH) 환경에서 NITROS가 EGL 초기화 실패 | `param_overrides:="debug.disable_nitros:=true"` 또는 DISPLAY 설정된 환경에서 실행 |
+| `modprobe: FATAL: Module sl_zedx not found` | ZED Link 드라이버 미설치 또는 RT/표준 커널 불일치 | `sudo bash install-zed-link-driver.sh --card <type>` 실행. RT 커널이면 `-rt-` 변형 자동 선택됨 |
+| `zed_x_daemon` 서비스 없음 | ZED Link 드라이버 미설치 (SDK만 설치됨) | ZED Link 드라이버 설치 필요. SDK와 별도 패키지 |
+| `ZED_Explorer: command not found` | SDK 설치 시 `--no-tools` 또는 `--minimal` 사용 | `sudo bash install-zed-sdk.sh --force` 재설치 (기본값: Tools 포함) |
 | `Object Det. enabled: FALSE` (od_enabled 무시됨) | `od_enabled:=true`는 launch argument가 아님 | `param_overrides:="object_detection.od_enabled:=true"` 사용 |
 
 ### Isaac ROS GXF 라이브러리 경로 미등록 (호스트 설치 시)

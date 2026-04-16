@@ -33,7 +33,7 @@ die()   { error "$*"; exit 1; }
 # ---------------------------------------------------------------------------
 SKIP_PYTHON=false
 SKIP_AI=false
-SKIP_TOOLS=true  # tools는 기본적으로 제외 (ZED Explorer 등 GUI 도구)
+SKIP_TOOLS=false  # ZED Explorer, Diagnostic 등 — 카메라 상태 확인에 필요
 FORCE_REINSTALL=false
 SDK_VERSION="5.2"
 
@@ -41,8 +41,8 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --no-python) SKIP_PYTHON=true; shift ;;
         --no-ai)     SKIP_AI=true; shift ;;
-        --minimal)   SKIP_PYTHON=true; SKIP_AI=true; shift ;;
-        --with-tools) SKIP_TOOLS=false; shift ;;
+        --minimal)   SKIP_PYTHON=true; SKIP_AI=true; SKIP_TOOLS=true; shift ;;
+        --no-tools)  SKIP_TOOLS=true; shift ;;
         --force)     FORCE_REINSTALL=true; shift ;;
         --sdk-version)
             SDK_VERSION="$2"
@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
             echo "  --no-python         Python 바인딩(pyzed) 제외"
             echo "  --no-ai             AI 모듈(Object Detection) 제외"
             echo "  --minimal           AI + Python + Tools 모두 제외"
-            echo "  --with-tools        ZED Tools(Explorer, Diagnostic 등) 포함"
+            echo "  --no-tools          ZED Tools(Explorer, Diagnostic 등) 제외"
             echo "  --force             기존 설치 덮어쓰기"
             echo "  --sdk-version VER   ZED SDK 버전 지정 (기본: 5.2)"
             exit 0
@@ -121,11 +121,8 @@ info "  Python: ${PYTHON_VER}"
 
 # RT 커널 감지
 if uname -v | grep -q "PREEMPT_RT"; then
-    warn "PREEMPT_RT 커널 감지"
-    warn "ZED X (GMSL2) 카메라 사용 시 커널 모듈 호환성 확인 필요:"
-    warn "  ls /usr/lib/modules/$(uname -r)/kernel/drivers/stereolabs/"
-    warn "  GMSL2 모듈(sl_zedx.ko, max96712.ko)이 RT 커널에서 로드되지 않을 수 있음"
-    warn "  USB 카메라(ZED 2, ZED Mini)는 RT 커널에서도 정상 동작"
+    info "  PREEMPT_RT 커널 감지"
+    info "  ZED Link 드라이버 설치 시 RT 변형(-rt-)을 사용해야 합니다"
 fi
 
 # 이미 설치 확인
@@ -206,6 +203,19 @@ rm -f "$INSTALLER"
 info "  SDK 설치 완료"
 
 # ---------------------------------------------------------------------------
+# Step 4.5: ZED Tools PATH 등록
+# ---------------------------------------------------------------------------
+ZED_TOOLS_DIR="/usr/local/zed/tools"
+if [ -d "$ZED_TOOLS_DIR" ]; then
+    BASHRC_FILE="$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)/.bashrc"
+    PATH_LINE="export PATH=\"\$PATH:$ZED_TOOLS_DIR\""
+    if [ -f "$BASHRC_FILE" ] && ! grep -qF "$ZED_TOOLS_DIR" "$BASHRC_FILE"; then
+        echo "$PATH_LINE" >> "$BASHRC_FILE"
+        info "  ZED Tools PATH 등록: $BASHRC_FILE"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Step 5: 설치 검증
 # ---------------------------------------------------------------------------
 info "Step 5: 설치 검증"
@@ -260,5 +270,13 @@ info "설치 경로: /usr/local/zed/"
 info "L4T: R${L4T_RELEASE}.${L4T_REVISION} (${SDK_L4T})"
 if [ "$SKIP_PYTHON" = false ]; then
     info "pyzed: $(python3 -c 'import pyzed; print(pyzed.__version__)' 2>/dev/null || echo '확인 필요')"
+fi
+echo ""
+# GMSL2 카메라 사용자에게 ZED Link 드라이버 안내
+if ! systemctl list-unit-files 2>/dev/null | grep -q zed_x_daemon; then
+    info "다음 단계:"
+    info "  GMSL2 카메라(ZED X, ZED X Mini) 사용 시 ZED Link 드라이버 설치 필요:"
+    info "    sudo bash install-zed-link-driver.sh --card <mono|duo|quad>"
+    info "  USB 카메라(ZED 2, ZED Mini)는 추가 드라이버 불필요"
 fi
 echo "=========================================="
