@@ -100,16 +100,38 @@ yolo export model=path/to/best.pt format=onnx simplify=True dynamic=False imgsz=
 
 ## 4. ROS 2에서 사용하기 (zed-ros2-wrapper)
 
-### 4.1 빌트인 모델 사용 (즉시 사용 가능)
+### 4.0 plem 플랫폼 정책 (기본 OFF)
 
-SDK 내장 모델로 Object Detection을 바로 실행:
+plem 배포 기본값은 **ZED SDK 내장 OD 비활성**이다:
 
-> **주의**: `object_detection.od_enabled:=true`를 launch argument로 직접 전달하면 **효과 없음**. ROS 2 launch는 미선언 argument를 경고 없이 무시한다. 반드시 `param_overrides`를 사용할 것.
+- 내장 모델 (`MULTI_CLASS_BOX_*`, `PERSON_HEAD_BOX_*`)은 **consumer/automotive classifier** — person / vehicle / bag / animal / electronics / fruit_vegetable / sport 의 7개 일반 카테고리. 산업 manipulator 워크플로우에서는 **무의미한 박스**를 생성한다.
+- Tracking이 켜지면 SDK가 `positional_tracking`도 강제 활성화하여 `depth_stabilization=0` 정책 (fixed-base robot)과 충돌.
+- GPU/VRAM 을 OD 모델에 낭비.
+
+**단일 진실 소스 (SSOT)**: `src/plem-neuromeka/neuromeka_integrations/config/perception_profiles.yaml`
+
+```yaml
+profiles:
+  balanced:
+    zed:
+      ...
+      object_detection_enabled: false  # 기본 off
+```
+
+이 플래그는 launch-side `_ZED_PARAM_MAP` 에 의해 `object_detection.od_enabled` ROS 파라미터로 변환되어 ZED wrapper 에 그대로 전달된다. `plem_server` 는 **수동적 subscriber** 일 뿐이며 별도 runtime enable 경로는 존재하지 않는다.
+
+**활성화가 필요한 워크플로우**: 아래 4.2 의 **CUSTOM_YOLOLIKE_BOX_OBJECTS + 태스크 전용 ONNX** 경로를 권장. 내장 모델 (4.1) 은 디버그/데모 용도로만 사용하고, 생산 환경에서는 기본 off 를 유지한다.
+
+### 4.1 빌트인 모델 사용 (디버그/데모 전용)
+
+> **경고**: 내장 모델은 consumer classifier 이며 plem 생산 배포에서는 사용하지 않는다. 개발/테스트 단계에서 ZED OD 스택이 살아있는지 확인하는 용도 정도로만 쓴다.
 
 ```bash
 ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zedxm \
     param_overrides:="object_detection.od_enabled:=true"
 ```
+
+(plem-tui 경로에서는 `perception_profiles.yaml` 의 `object_detection_enabled: true` 로 전환.)
 
 내장 모델 목록:
 

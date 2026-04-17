@@ -79,7 +79,7 @@ source install/setup.bash        # 매 터미널마다 필수 (TUI는 자동 처
 
 ros2 launch neuromeka_robot_driver plem_launch.py \
   robot_type:={robot_model} robot_id:={robot_id} \
-  gripper:={gripper} camera:={camera}
+  gripper_model:={gripper_model} camera_model:={camera_model}
 
 # Simulation (no real hardware)
 ros2 launch neuromeka_robot_driver plem_launch.py \
@@ -192,8 +192,9 @@ Replace `CAMERA_SECTION` with:
 ```markdown
 ## Camera
 
-`camera:={camera}` adds TF frames to the URDF for collision avoidance.
-Camera image streaming requires a separate driver — 이미 설치되어 있지 않다면 `scripts/zed/` 스크립트로 설치한다.
+`camera_model:={camera_model}` adds TF frames to the URDF for collision avoidance.
+Camera image streaming requires ZED SDK + (GMSL2 시) Link 드라이버 + zed-ros2-wrapper —
+아직 설치되지 않았다면 wim_control 의 `./packaging/zed-setup/zed-setup` 으로 한 번에 설치.
 
 개발 중 ZED 관련 질문(QoS, 토픽명, YOLO, TF 등)은 **`/zed-sdk`를 호출**하면 상세 레퍼런스를 제공한다.
 

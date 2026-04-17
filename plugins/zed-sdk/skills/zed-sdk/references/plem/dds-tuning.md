@@ -1,5 +1,5 @@
 ---
-description: "plem 환경 DDS 튜닝 — CycloneDDS 강제, 커널 버퍼 권장값, DDS XML 설정, cross-DDS 크래시 방지, install-ros2-zed-deps.sh 자동 설정"
+description: "plem 환경 DDS 튜닝 — CycloneDDS 강제, 커널 버퍼 권장값, DDS XML 설정, cross-DDS 크래시 방지, packaging/zed-setup 자동 설정"
 source: "zed-docs/references/dds-network.md"
 ---
 
@@ -42,7 +42,7 @@ net.ipv4.ipfrag_high_thresh = 134217728
 net.core.rmem_max = 2147483647
 ```
 
-> **참고**: `install-ros2-zed-deps.sh` 스크립트가 이 파일을 자동 생성한다. 수동 설정은 스크립트를 사용하지 않을 때만 필요.
+> **참고**: `./packaging/zed-setup/zed-setup install` 이 이 파일을 자동 생성한다 (deps 단계). 수동 설정은 통합 CLI 를 사용하지 않을 때만 필요.
 
 ```bash
 sudo sysctl --system

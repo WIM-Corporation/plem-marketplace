@@ -18,7 +18,7 @@ Determines which git repositories are required based on the model selected by th
 |-------|--------|-------------------|----------------|------------|
 | rg6 | OnRobot | `onrobot_description` | `neuromeka_onrobot_driver` | `plem-onrobot` (description) + `plem-neuromeka` (driver) |
 
-**Auto-launch:** When `gripper:=rg6` is specified, the driver node is automatically started via the `gripper_drivers.yaml` mapping.
+**Auto-launch:** When `gripper_model:=rg6` is specified, the driver node is automatically started via the `gripper_drivers.yaml` mapping.
 
 ## Camera Models
 

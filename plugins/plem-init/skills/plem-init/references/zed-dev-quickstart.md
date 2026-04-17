@@ -21,9 +21,9 @@ ZED_Explorer -a    # State: "AVAILABLE" 확인
 대용량 이미지/포인트 클라우드 토픽 수신을 위해 **반드시** DDS를 설정한다.
 설정 없이 진행하면 토픽이 silently drop된다.
 
-`install-ros2-zed-deps.sh` 스크립트가 CycloneDDS 설치, 커널 버퍼 설정(`/etc/sysctl.d/60-zed-dds-buffers.conf`), `RMW_IMPLEMENTATION` 환경변수를 자동 처리한다.
+`./packaging/zed-setup/zed-setup install` 이 CycloneDDS 설치, 커널 버퍼 설정(`/etc/sysctl.d/60-zed-dds-buffers.conf`), `RMW_IMPLEMENTATION` 환경변수를 자동 처리한다 (deps 단계).
 
-스크립트 없이 수동으로 설정하려면 `/zed-sdk dds` 참조.
+수동으로 설정하려면 `/zed-sdk dds` 참조.
 
 ## Step 2: 카메라 실행 + 토픽 확인
 
