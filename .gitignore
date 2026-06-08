@@ -18,6 +18,9 @@ Thumbs.db
 # Oh My Claude Code state
 .omc/
 
+# Skill eval scaffolding (dev-only; not part of any published plugin)
+*-workspace/
+
 # Node (if plugins use npm dependencies)
 node_modules/
 
