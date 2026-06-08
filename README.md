@@ -10,9 +10,7 @@ A plugin marketplace for distributing Claude Code extensions (skills, agents, ho
 
 | Plugin | Version | Description |
 | ------ | ------- | ----------- |
-| [plem-init](plugins/plem-init) | 1.2.1 | plem-based robot project initialization wizard |
-| [zed-sdk](plugins/zed-sdk) | 1.1.0 | ZED SDK official documentation reference (Camera API, depth sensing, object detection, body tracking, ROS 2, YOLO) |
-| [ros-docs](plugins/ros-docs) | 1.0.0 | ROS 2 official documentation reference (build, QoS, TF2, Launch, DDS, Executor) |
+| [plem-docs](plugins/plem-docs) | 1.0.0 | Live, version-matched PLEM Developer Manual served from Depot (Context7-style); routes ZED/ROS questions to Context7 |
 
 
 ## Quick Start

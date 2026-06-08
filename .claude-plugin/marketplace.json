@@ -9,21 +9,9 @@
   },
   "plugins": [
     {
-      "name": "plem-init",
-      "source": "./plugins/plem-init",
-      "description": "plem 기반 로봇 프로젝트 초기화 위자드",
-      "version": "1.2.1"
-    },
-    {
-      "name": "zed-sdk",
-      "source": "./plugins/zed-sdk",
-      "description": "ZED SDK 공식 문서 레퍼런스 (카메라 API, 깊이 센싱, 객체 탐지, ROS 2, YOLO)",
-      "version": "1.1.0"
-    },
-    {
-      "name": "ros-docs",
-      "source": "./plugins/ros-docs",
-      "description": "ROS 2 공식 문서 기반 레퍼런스",
+      "name": "plem-docs",
+      "source": "./plugins/plem-docs",
+      "description": "설치된 PLEM 버전에 맞는 PLEM Developer Manual을 Depot에서 라이브 제공 (Context7 스타일). ZED/ROS는 Context7로 라우팅",
       "version": "1.0.0"
     }
   ]
