@@ -1,6 +1,6 @@
 {
   "name": "plem-docs",
   "description": "설치된 PLEM 버전에 맞는 PLEM Developer Manual을 Depot에서 라이브로 가져오는 스킬 (Context7 스타일). ZED/ROS 등 서드파티 문서는 Context7로 라우팅.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "keywords": ["plem", "docs", "llms", "depot", "agent-docs", "context7", "ros2", "robot", "manual"]
 }

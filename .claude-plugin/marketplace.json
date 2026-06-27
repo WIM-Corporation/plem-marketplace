@@ -12,7 +12,7 @@
       "name": "plem-docs",
       "source": "./plugins/plem-docs",
       "description": "설치된 PLEM 버전에 맞는 PLEM Developer Manual을 Depot에서 라이브 제공 (Context7 스타일). ZED/ROS는 Context7로 라우팅",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ]
 }
