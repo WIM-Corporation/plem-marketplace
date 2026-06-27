@@ -10,7 +10,7 @@ A plugin marketplace for distributing Claude Code extensions (skills, agents, ho
 
 | Plugin | Version | Description |
 | ------ | ------- | ----------- |
-| [plem-docs](plugins/plem-docs) | 1.0.0 | Live, version-matched PLEM Developer Manual served from Depot (Context7-style); routes ZED/ROS questions to Context7 |
+| [plem-docs](plugins/plem-docs) | 1.1.0 | Live, version-matched PLEM Developer Manual served from Depot (Context7-style); routes ZED/ROS questions to Context7 |
 
 
 ## Quick Start

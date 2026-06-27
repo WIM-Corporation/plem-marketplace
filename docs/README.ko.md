@@ -10,7 +10,7 @@ Claude Code 확장 기능(스킬, 에이전트, 훅, MCP 서버, LSP 서버)을 
 
 | 플러그인 | 버전 | 설명 |
 | -------- | ---- | ---- |
-| [plem-docs](../plugins/plem-docs) | 1.0.0 | 설치된 PLEM 버전에 맞는 PLEM Developer Manual을 Depot에서 라이브 제공 (Context7 스타일). ZED/ROS는 Context7로 라우팅 |
+| [plem-docs](../plugins/plem-docs) | 1.1.0 | 설치된 PLEM 버전에 맞는 PLEM Developer Manual을 Depot에서 라이브 제공 (Context7 스타일). ZED/ROS는 Context7로 라우팅 |
 
 
 ## 빠른 시작
